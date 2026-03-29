@@ -1,0 +1,144 @@
+.app {
+height: 100vh;
+display: flex;
+flex-direction: column;
+font-family: 'Inter', system-ui, sans-serif;
+background: #ffffff;
+}
+
+/* LINHA LARANJA FININHA */
+.top-thin-bar {
+height: 10px;
+background: #F27F20;
+width: 100%;
+}
+
+/* FAIXA CINZA CLARO */
+.top-gray-bar {
+height: 85px;
+background: #f3f2f3;
+display: flex;
+align-items: center;
+padding: 0 10px;
+gap: 15px;
+}
+
+.logo-container {
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.logo-image {
+height: 100px;       
+width: auto;
+object-fit: contain;
+}
+
+.divider {
+font-size: 35px;
+color: #a9aab0;
+font-weight: 200px;
+padding: 1px 1px;
+}
+
+.university-name {
+font-size: 17px;
+font-weight: 600;
+color: #a9aab0;
+white-space: nowrap;
+}
+
+/* Usuário no canto direito */
+.user-info {
+margin-left: auto;
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 8px 40px;
+background: #faf8f9;
+border-radius: 15px;
+box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+border: 1px solid #f0f0f0;
+}
+
+.user-avatar {
+width: 38px;
+height: 38px;
+border-radius: 50%;
+object-fit: cover;
+border: 3px solid #5E626D;
+}
+
+.user-greeting {
+font-weight: bold;
+color: #5E626D;
+font-size: 16px;
+}
+
+
+/* SIDEBAR */
+.main-layout {
+display: flex;
+flex: 1;
+overflow: hidden;
+}
+
+.sidebar {
+width: 280px;
+background: linear-gradient(to bottom, #F38021, #DF6F11);
+color: white;
+display: flex;
+flex-direction: column;
+transition: all 0.3s ease;
+}
+
+.sidebar-header {
+padding: 29px 24px;
+display: flex;
+align-items: center;
+gap: 12px;
+font-size: 18px;
+font-weight: 600;
+}
+
+.menu-list {
+flex: 1;
+padding: 12px 0;          
+}
+
+.menu-item {
+display: flex;
+align-items: center;
+gap: 14px;
+padding: 16px 24px;        
+font-size: 15.5px;
+font-weight: 550;
+color: white;
+text-decoration: none;
+transition: all 0.3s ease;
+margin: 2px 8px;           
+border-radius: 8px;       
+}
+
+.menu-item:hover {
+background: rgba(255, 255, 255, 0.15);
+margin: 2px 8px;
+}
+
+.menu-item.active {
+background: #fe963d;
+color: white;
+margin: 2px 0;             
+border-radius: 0;          
+font-weight: 600;
+box-shadow: 4px 0 0 #ffffff inset;   
+}
+
+.content-area {
+flex: 1;
+background: white;
+border-radius: 16px 0 0 0;
+padding: 30px 70px;
+overflow-y: auto;
+}
