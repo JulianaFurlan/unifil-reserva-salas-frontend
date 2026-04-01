@@ -30,19 +30,6 @@ return (
     Centro Universitário Filadélfia
     </div>
 </div>
-
-
-{/* COMPONENTE DO USUÁRIO (novo) */}
-<div className="user-info">
-<img 
-    src="https://i.pravatar.cc/40"     // ← Troque depois pela foto real da Juliana
-    alt="Foto do usuário" 
-    className="user-avatar"
-/>
-<div className="user-greeting">
-    Olá, Juliana
-</div>
-</div>
 </header>
 
     <div className="main-layout">
@@ -59,19 +46,33 @@ return (
             Solicitar Reserva
         </a>
         <a href="#" className="menu-item">
-            <AiOutlineSearch size={39} />
-            Consultar Disponibilidade
+            <AiOutlineSearch size={35} />
+            Conferir Disponibilidade
         </a>
         <a href="#" className="menu-item">
             <BsInboxes size={23} />
             Meus pedidos
         </a>
         </nav>
+
+    <div className="user-section">
+    <div className="user-content">
+        <img 
+        src="https://i.pravatar.cc/150?img=26" 
+        alt="Juliana Furlan" 
+        className="user-avatar"
+        />
+        <div className="user-info-sidebar">
+        <span className="greeting">Olá,</span>
+        <span className="user-name">Juliana</span>
+        </div>
+    </div>
+    </div>
     </aside>
 
-    {/* ONDE O CONTEÚDO DE CADA PÁGINA VAI APARECER */}
+    {/* CONTEÚDO DE CADA PÁGINA */}
     <main className="content-area">
-        <Outlet />   {/* ← Aqui entra o conteúdo de Reserva, etc */}
+        <Outlet />
     </main>
     </div>
 </div>
