@@ -36,7 +36,6 @@ return (
     {/* SIDEBAR*/}
     <aside className="sidebar">
         <div className="sidebar-header">
-        <span className="menu-icon">☰</span>
         <span>Menu</span>
         </div>
 

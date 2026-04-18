@@ -24,6 +24,7 @@ const [errors, setErrors] = useState({});
 const [reservas, setReservas] = useState([]);
 const [editingId, setEditingId] = useState(null);
 const [loading, setLoading] = useState(false);
+const [mensagem, setMensagem] = useState({ tipo: "", texto: "" });
 
 const now = new Date();
 const year = now.getFullYear();
@@ -31,15 +32,41 @@ const month = String(now.getMonth() + 1).padStart(2, "0");
 const day = String(now.getDate()).padStart(2, "0");
 const today = `${year}-${month}-${day}`;
 
+const maxDate = new Date();
+maxDate.setFullYear(maxDate.getFullYear() + 1);
+const maxDateString = maxDate.toISOString().split("T")[0];
+
+// Função para aplicar máscara no telefone
+const applyTelefoneMask = (value) => {
+    const apenasNumeros = value.replace(/\D/g, "");
+    
+    if (apenasNumeros.length === 0) return "";
+    
+    // Máscara para celular (11 dígitos): (XX) XXXXX-XXXX
+    if (apenasNumeros.length <= 10) {
+        // Telefone fixo (10 dígitos): (XX) XXXX-XXXX
+        return apenasNumeros.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    } else {
+        // Celular (11 dígitos): (XX) XXXXX-XXXX
+        return apenasNumeros.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    }
+};
+
+// Função para validar telefone (retorna true/false)
+const validarTelefone = (telefone) => {
+    if (!telefone) return true; // Campo opcional
+    const apenasNumeros = telefone.replace(/\D/g, "");
+    return apenasNumeros.length === 10 || apenasNumeros.length === 11;
+};
+
 // Carregar reservas
 const carregarReservas = async () => {
 try {
     const response = await axios.get(API_URL);
     setReservas(response.data);
 } catch (error) {
-    console.error("ERRO completo ao carregar reservas:", error);
-    alert("Não foi possível carregar as reservas. Verifique se o backend está rodando.");
-}
+    console.error("ERRO ao carregar reservas:", error);
+    }
 };
 
 useEffect(() => {
@@ -48,55 +75,74 @@ carregarReservas();
 
 // Validação em tempo real
 useEffect(() => {
-const liveErrors = {};
+    const liveErrors = {};
 
-if (form.data) {
-    if (form.data < today) liveErrors.data = "Não é possível reservar em datas passadas";
-}
+    if (form.data) {
+        if (form.data < today) {
+            liveErrors.data = "Não é possível reservar em datas passadas";
+        } else if (form.data > maxDateString) {
+            liveErrors.data = "Não é possível reservar com mais de 1 ano de antecedência";
+        }
+    }
 
-const isToday = form.data === today;
-if (isToday && form.horaInicio) {
-    const currentHour = now.getHours().toString().padStart(2, "0");
-    const currentMinute = now.getMinutes().toString().padStart(2, "0");
-    const currentTime = `${currentHour}:${currentMinute}`;
-    if (form.horaInicio < currentTime) liveErrors.horaInicio = "Escolha um horário futuro.";
-}
+    const isToday = form.data === today;
+    if (isToday && form.horaInicio) {
+        const currentHour = now.getHours().toString().padStart(2, "0");
+        const currentMinute = now.getMinutes().toString().padStart(2, "0");
+        const currentTime = `${currentHour}:${currentMinute}`;
+        if (form.horaInicio < currentTime) {
+            liveErrors.horaInicio = "Escolha um horário futuro.";
+        }
+    }
 
-if (form.horaInicio && form.horaFim && form.horaInicio >= form.horaFim) {
-    liveErrors.horaFim = "Horário de início deve ser anterior ao de fim";
-}
+    if (form.horaInicio && form.horaFim && form.horaInicio >= form.horaFim) {
+        liveErrors.horaFim = "Horário de início deve ser anterior ao de fim";
+    }
 
-if (form.data && form.horaInicio && form.horaFim && form.sala) {
-    const hasConflict = reservas.some((res) => {
-    if (editingId && res.id === editingId) return false;
-    if (res.sala !== form.sala || res.data !== form.data) return false;
-    return !(form.horaFim <= res.horaInicio || form.horaInicio >= res.horaFim);
+    if (form.data && form.horaInicio && form.horaFim && form.sala) {
+        const hasConflict = reservas.some((res) => {
+        if (editingId && res.id === editingId) return false;
+        if (res.sala !== form.sala || res.data !== form.data) return false;
+        const overlap = !(form.horaFim <= res.horaInicio || form.horaInicio >= res.horaFim);
+        return overlap;
+        });
+
+        if (hasConflict) {
+            liveErrors.conflict = "Esta sala já está reservada neste período.";
+        }
+    }
+
+    // VALIDAÇÃO DO TELEFONE CORRIGIDA
+    if (form.telefone && !validarTelefone(form.telefone)) {
+        liveErrors.telefone = "Telefone deve conter 10 ou 11 dígitos";
+    } else {
+        // Se o telefone for válido, remove o erro
+        delete errors.telefone;
+    }
+
+    setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated.data;
+        delete updated.horaInicio;
+        delete updated.horaFim;
+        delete updated.conflict;
+        delete updated.telefone; // Remove o telefone antigo antes de adicionar o novo
+        return { ...updated, ...liveErrors };
     });
-
-    if (hasConflict) liveErrors.conflict = "Esta sala já está reservada neste período.";
-}
-
-setErrors((prev) => {
-    const updated = { ...prev };
-    delete updated.data;
-    delete updated.horaInicio;
-    delete updated.horaFim;
-    delete updated.conflict;
-    return { ...updated, ...liveErrors };
-});
-}, [form.data, form.horaInicio, form.horaFim, form.sala, reservas, editingId, today]);
+}, [form.data, form.horaInicio, form.horaFim, form.sala, form.telefone, reservas, editingId, today]);
 
 const handleChange = (e) => {
-const { name, value } = e.target;
-setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
 
-if (errors[name] && !["data", "horaInicio", "horaFim", "sala"].includes(name)) {
-    setErrors((prev) => {
-    const copy = { ...prev };
-    delete copy[name];
-    return copy;
-    });
-}
+    // TRATAMENTO ESPECIAL PARA TELEFONE COM MÁSCARA
+    if (name === "telefone") {
+        // Aplica a máscara automaticamente
+        const telefoneMascarado = applyTelefoneMask(value);
+        setForm((prev) => ({ ...prev, telefone: telefoneMascarado }));
+        return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: value }));
 };
 
 const resetForm = () => {
@@ -106,15 +152,38 @@ setForm({
 });
 setEditingId(null);
 setErrors({});
+setMensagem({ tipo: "", texto: "" });
 };
 
 const handleSubmit = async (e) => {
 e.preventDefault();
 
-if (!form.data || !form.horaInicio || !form.horaFim || !form.nome || !form.email) {
-    alert("Preencha os campos obrigatórios!");
+const newErrors = {};
+
+if (!form.data) newErrors.data = "Data é obrigatória";
+if (!form.horaInicio) newErrors.horaInicio = "Horário inicial obrigatório";
+if (!form.horaFim) newErrors.horaFim = "Horário final obrigatório";
+if (!form.nome) newErrors.nome = "Nome é obrigatório";
+if (!form.email) newErrors.email = "Email é obrigatório";
+if (!form.departamento) newErrors.departamento = "Selecione um departamento";
+if (!form.finalidade) newErrors.finalidade = "Selecione uma finalidade";
+
+if (form.finalidade === "outro" && !form.finalidadeOutro) {
+    newErrors.finalidadeOutro = "Descreva a finalidade";
+}
+
+// VALIDAÇÃO DO TELEFONE CORRIGIDA
+if (form.telefone && !validarTelefone(form.telefone)) {
+    newErrors.telefone = "Telefone deve conter 10 ou 11 dígitos";
+}
+
+if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
     return;
 }
+
+// Remove caracteres não numéricos antes de enviar para o backend
+const telefoneEnvio = form.telefone.replace(/\D/g, "");
 
 const reservaParaEnviar = {
     data: form.data,
@@ -123,7 +192,7 @@ const reservaParaEnviar = {
     sala: form.sala,
     nome: form.nome,
     email: form.email,
-    telefone: form.telefone,
+    telefone: telefoneEnvio, // Envia apenas números
     departamento: form.departamento,
     finalidade: form.finalidade === "outro" 
     ? form.finalidadeOutro 
@@ -162,6 +231,9 @@ try {
 };
 
 const handleEdit = (reserva) => {
+// Aplica máscara ao telefone ao carregar para edição
+const telefoneMascarado = reserva.telefone ? applyTelefoneMask(reserva.telefone) : "";
+
 setForm({
     data: reserva.data,
     horaInicio: reserva.horaInicio,
@@ -169,7 +241,7 @@ setForm({
     sala: reserva.sala,
     nome: reserva.nome,
     email: reserva.email,
-    telefone: reserva.telefone || "",
+    telefone: telefoneMascarado,
     departamento: reserva.departamento || "",
     finalidade: reserva.finalidade === "Reunião de equipe" ? "reuniao" :
                 reserva.finalidade === "Aula / Treinamento" ? "aula" :
@@ -186,80 +258,66 @@ if (!window.confirm("Tem certeza que deseja excluir esta reserva?")) return;
 
 try {
     await axios.delete(`${API_URL}/${id}`);
-    alert("Reserva excluída.");
+    setMensagem({ tipo: "sucesso", texto: "Solicitação excluída com sucesso." });
     carregarReservas();
 } catch (error) {
-    alert("Erro ao excluir: " + (error.response?.data || error.message));
+    setMensagem({ tipo: "erro", texto: "Erro ao excluir solicitação." });
 }
 };
 
 return (
 <>
-    {/* TÍTULO - agora só aqui dentro da Reserva */}
     <div className="page-title-container">
-    <h1 className="page-title">
-        {editingId ? "Editar Reserva" : "Reserva de Salas"}
-    </h1>
+    <h1 className="page-title">Reserva de Salas</h1>
     </div>
 
-    <form onSubmit={handleSubmit} className="form-container">
-    {/* Seu formulário completo continua aqui */}
-    <div className="form-row three-columns">
-        <div className="form-group">
-        <label>Data <span className="required">*</span></label>
-        <input type="date" name="data" value={form.data} onChange={handleChange} min={today} />
-        {errors.data && <p className="error-message">{errors.data}</p>}
-        </div>
+{mensagem.texto && (
+    <div className={`mensagem ${mensagem.tipo}`}>
+        {mensagem.texto}
+        <button onClick={() => setMensagem({ tipo: "", texto: "" })} className="close-btn">X</button>
+    </div>
+)}
+    
+<form onSubmit={handleSubmit} className="form-container">
+<div className="form-row three-columns">
+    <div className="form-group">
+    <label>Data <span className="required">*</span></label>
+    <input type="date" name="data" value={form.data} onChange={handleChange} min={today} />
+    {errors.data && <p className="error-message">{errors.data}</p>}
+    </div>
 
-        <div className="form-group">
-        <label>Horário <span className="required">*</span></label>
-        <div className="time-range">
-            <input type="time" name="horaInicio" value={form.horaInicio} onChange={handleChange} className={errors.horaInicio ? "error" : ""} />
-            <span>até</span>
-            <input type="time" name="horaFim" value={form.horaFim} onChange={handleChange} className={errors.horaFim ? "error" : ""} />
-        </div>
-        {errors.horaInicio && <p className="error-message">{errors.horaInicio}</p>}
-        {errors.horaFim && <p className="error-message">{errors.horaFim}</p>}
-        {errors.conflict && <p className="error-message conflict">{errors.conflict}</p>}
-        </div>
+    <div className="form-group">
+    <label>Horário <span className="required">*</span></label>
+    <div className="time-range">
+        <input type="time" name="horaInicio" value={form.horaInicio} onChange={handleChange} className={errors.horaInicio ? "error" : ""} />
+        <span>até</span>
+        <input type="time" name="horaFim" value={form.horaFim} onChange={handleChange} className={errors.horaFim ? "error" : ""} />
+    </div>
+    {errors.horaInicio && <p className="error-message">{errors.horaInicio}</p>}
+    {errors.horaFim && <p className="error-message">{errors.horaFim}</p>}
+    {errors.conflict && <p className="error-message conflict">{errors.conflict}</p>}
+    </div>
 
 <div className="form-group">
-  <label>Sala</label>
-  <select name="sala" value={form.sala} onChange={handleChange}>
-    
-    {/* Labs - SEDE */}
-    <option value="Lab 2 - SEDE">Lab 2 - SEDE</option>
-    <option value="Lab 3 - SEDE">Lab 3 - SEDE</option>
-    <option value="Lab 4 - SEDE">Lab 4 - SEDE</option>
-    <option value="Lab 5 - SEDE">Lab 5 - SEDE</option>
-    <option value="Lab 6 - SEDE">Lab 6 - SEDE</option>
-    <option value="Lab 7 - SEDE">Lab 7 - SEDE</option>
-    <option value="Lab 8 - SEDE">Lab 8 - SEDE</option>
+    <label>Sala</label>
+    <select name="sala" value={form.sala} onChange={handleChange}>
+        
+        {/* Labs - SEDE */}
+        <option value="Lab 2 - SEDE">Lab 2 - SEDE</option>
+        <option value="Lab 3 - SEDE">Lab 3 - SEDE</option>
+        <option value="Lab 4 - SEDE">Lab 4 - SEDE</option>
 
 
-    {/* Salas - SEDE */}
-    <option value="Sala 101 - SEDE">Sala 101 - SEDE</option>
-    <option value="Sala 109 - SEDE">Sala 109 - SEDE</option>
+        {/* Salas - SEDE */}
+        <option value="Sala 101 - SEDE">Sala 101 - SEDE</option>
+        <option value="Sala 109 - SEDE">Sala 109 - SEDE</option>
 
-    {/* Ipollon II */}
-    <option value="1028 - Ipollon II">1028 - Ipollon II</option>
-    <option value="1029 - Ipollon II">1029 - Ipollon II</option>
-    <option value="1030 - Ipollon II">1030 - Ipollon II</option>
-    <option value="1031 - Ipollon II">1031 - Ipollon II</option>
-    <option value="1032 - Ipollon II">1032 - Ipollon II</option>
-    <option value="1033 - Ipollon II">1033 - Ipollon II</option>
-    <option value="1034 - Ipollon II">1034 - Ipollon II</option>
-    <option value="1035 - Ipollon II">1035 - Ipollon II</option>
-    <option value="1036 - Ipollon II">1036 - Ipollon II</option>
-    <option value="1037 - Ipollon II">1037 - Ipollon II</option>
-    <option value="1038 - Ipollon II">1038 - Ipollon II</option>
-    <option value="1039 - Ipollon II">1039 - Ipollon II</option>
+        {/* Ipollon II */}
+        <option value="1028 - Ipollon II">1028 - Ipollon II</option>
+        <option value="1029 - Ipollon II">1029 - Ipollon II</option>
+        <option value="1030 - Ipollon II">1030 - Ipollon II</option>
 
-    {/* Já existentes */}
-    <option value="1042 - Ipollon III">1042 - Ipollon III</option>
-    <option value="2015 - Bloco B">2015 - Bloco B</option>
-
-  </select>
+    </select>
 </div>
     </div>
 
@@ -278,7 +336,15 @@ return (
         </div>
         <div className="form-group">
         <label>Telefone</label>
-        <input type="tel" name="telefone" placeholder="(xx) yyyy-yyyy" value={form.telefone} onChange={handleChange} />
+        <input 
+            type="tel" 
+            name="telefone" 
+            placeholder="(99) 99999-9999" 
+            value={form.telefone} 
+            onChange={handleChange}
+            maxLength={15} // (99) 99999-9999 = 15 caracteres
+        />
+        {errors.telefone && <p className="error-message">{errors.telefone}</p>}
         </div>
     </div>
 
@@ -336,7 +402,7 @@ return (
     </div>
 
     <button type="submit" className="btn-confirm" disabled={loading}>
-        {loading ? "Salvando..." : editingId ? "Atualizar Reserva" : "Confirmar Reserva"}
+        {loading ? "Enviando Solicitação..." : editingId ? "Atualizar Solicitação" : "Enviar Reserva"}
     </button>
 
     {editingId && (
@@ -347,7 +413,7 @@ return (
     </form>
 
     <h2 className="section-title" style={{ marginTop: "60px" }}>
-    Reservas Cadastradas ({reservas.length})
+    Solicitações Cadastradas ({reservas.length})
     </h2>
 
     <div className="table-container">
