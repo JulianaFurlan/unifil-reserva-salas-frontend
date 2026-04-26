@@ -1,0 +1,33 @@
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+
+export default function ProtectedRoute({ children, roles = [] }) {
+const { user, loading } = useAuth();
+
+if (loading) {
+return (
+    <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh' 
+    }}>
+    Carregando...
+    </div>
+);
+}
+
+if (!user) {
+return <Navigate to="/login" replace />;
+}
+
+if (roles.length > 0 && !roles.includes(user.tipo)) {
+// Redireciona baseado no tipo de usuário
+if (user.tipo === 'COMUM') return <Navigate to="/solicitar-reserva" replace />;
+if (user.tipo === 'GESTOR') return <Navigate to="/gestor/solicitacoes" replace />;
+if (user.tipo === 'ADMIN') return <Navigate to="/admin/salas" replace />;
+return <Navigate to="/solicitar-reserva" replace />;
+}
+
+return children || <Outlet />;
+}
