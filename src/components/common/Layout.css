@@ -1,0 +1,242 @@
+/* src/components/common/Layout.css */
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #ffffff;
+}
+
+/* LINHA LARANJA */
+.top-thin-bar {
+  height: 10px;
+  background: #F27F20;
+  width: 100%;
+}
+
+/* FAIXA CINZA */
+.top-gray-bar {
+  height: 85px;
+  background: #f3f2f3;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 15px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logo-image {
+  height: 100px;       
+  width: auto;
+  object-fit: contain;
+}
+
+.divider {
+  font-size: 35px;
+  color: #a9aab0;
+  font-weight: 200;
+}
+
+.university-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: #a9aab0;
+  white-space: nowrap;
+}
+
+/* SIDEBAR */
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 280px;
+  background: linear-gradient(to bottom, #F38021, #DF6F11);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 29px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.menu-list {
+  flex: 1;
+  padding: 12px 0;          
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;        
+  font-size: 15.5px;
+  font-weight: 550;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin: 2px 8px;           
+  border-radius: 8px;       
+  background: none;
+  border: none;
+  width: calc(100% - 16px);
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #fe963d;
+  color: white;
+  margin: 2px 0;             
+  border-radius: 0;          
+  font-weight: 600;
+  box-shadow: 4px 0 0 #ffffff inset;  
+}
+
+.menu-item.active {
+  background: #fe963d;
+  color: white;
+  margin: 2px 0;             
+  border-radius: 0;          
+  font-weight: 600;
+  box-shadow: 4px 0 0 #ffffff inset;   
+}
+
+/* USER SECTION - VERSÃO MELHORADA */
+.user-section {
+  padding: 18px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  margin-top: auto;
+}
+
+.user-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.user-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2.5px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+/* Placeholder quando não tem imagem */
+.user-avatar-placeholder {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.user-info-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.greeting {
+  font-size: 13.5px;
+  font-weight: 400;
+  opacity: 0.85;
+  line-height: 1;
+}
+
+.user-name {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* BOTÃO SAIR MELHORADO */
+.logout-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.content-area {
+  flex: 1;
+  background: white;
+  border-radius: 16px 0 0 0;
+  padding: 30px 70px;
+  overflow-y: auto;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+  
+  .menu-item span {
+    display: none;
+  }
+  
+  .user-info-sidebar {
+    display: none;
+  }
+  
+  .logout-btn {
+    margin-left: 0;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .content-area {
+    padding: 20px;
+  }
+  
+  .university-name {
+    font-size: 12px;
+    white-space: normal;
+  }
+  
+  .logo-image {
+    height: 50px;
+  }
+}

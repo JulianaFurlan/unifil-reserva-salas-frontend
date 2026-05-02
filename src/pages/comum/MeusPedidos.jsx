@@ -1,102 +1,13 @@
-// src/pages/MeusPedidos.jsx
+// src/pages/comum/MeusPedidos.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import Toast from "../components/Toast";
+import api from "../../services/api";
+import Toast from "../../components/common/Toast";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import "./reserva.css";
-
-const API_URL = "/api/reservas";
-
-
-const FAKE_RESERVAS = [
-  {
-    id: 1,
-    data: "2026-06-15",  
-    horaInicio: "14:00",
-    horaFim: "16:00",
-    sala: "Lab 2 - SEDE",
-    nome: "João Silva",
-    email: "joao@email.com",
-    telefone: "11999999999",
-    departamento: "TI",
-    finalidade: "Reunião de equipe",
-    observacoes: "",
-    status: "PENDENTE"
-  },
-  {
-    id: 2,
-    data: "2026-06-20",
-    horaInicio: "10:00",
-    horaFim: "11:30",
-    sala: "Sala 101 - SEDE",
-    nome: "Maria Santos",
-    email: "maria@email.com",
-    telefone: "11988888888",
-    departamento: "RH",
-    finalidade: "Treinamento",
-    observacoes: "",
-    status: "PENDENTE"
-  },
-  {
-    id: 3,
-    data: "2026-07-10",
-    horaInicio: "19:00",
-    horaFim: "21:00",
-    sala: "1028 - Ipollon II",
-    nome: "Carlos Souza",
-    email: "carlos@email.com",
-    telefone: "11977777777",
-    departamento: "ADM",
-    finalidade: "Evento externo",
-    observacoes: "",
-    status: "APROVADO"
-  },
-  {
-    id: 4,
-    data: "2026-08-05",
-    horaInicio: "08:00",
-    horaFim: "12:00",
-    sala: "Lab 3 - SEDE",
-    nome: "Ana Paula",
-    email: "ana@email.com",
-    telefone: "11966666666",
-    departamento: "TI",
-    finalidade: "Aula / Treinamento",
-    observacoes: "",
-    status: "APROVADO"
-  },
-  {
-    id: 5,
-    data: "2025-01-15",
-    horaInicio: "14:00",
-    horaFim: "16:00",
-    sala: "Sala 109 - SEDE",
-    nome: "Juliana Furlan",
-    email: "juliana@email.com",
-    telefone: "11955555555",
-    departamento: "TI",
-    finalidade: "Reunião de equipe",
-    observacoes: "",
-    status: "APROVADO"
-  },
-  {
-    id: 6,
-    data: "2025-02-20",
-    horaInicio: "09:00",
-    horaFim: "11:00",
-    sala: "1029 - Ipollon II",
-    nome: "Marcelo Yukio",
-    email: "marcelo@email.com",
-    telefone: "11944444444",
-    departamento: "ADM",
-    finalidade: "Reunião de equipe",
-    observacoes: "",
-    status: "CANCELADO"
-  }
-];
+import "../styles/reserva.css";
 
 const formatarData = (dataISO) => {
+  if (!dataISO) return "";
   const [ano, mes, dia] = dataISO.split("-");
   return `${dia}/${mes}/${ano}`;
 };
@@ -119,12 +30,12 @@ export default function MeusPedidos() {
   const carregarReservas = async () => {
     try {
       setLoading(true);
-      setTimeout(() => {
-        setReservas([...FAKE_RESERVAS]);
-        setLoading(false);
-      }, 500);
+      const response = await api.get("/reservas");
+      setReservas(response.data);
     } catch (error) {
       console.error("Erro:", error);
+      addToast('error', 'Erro ao carregar reservas');
+    } finally {
       setLoading(false);
     }
   };
@@ -140,18 +51,9 @@ export default function MeusPedidos() {
     hoje.setHours(0, 0, 0, 0);
     dataReserva.setHours(0, 0, 0, 0);
     
-    if (dataReserva < hoje) {
-      return 'finalizada';
-    }
-    
-    if (status === 'APROVADO') {
-      return 'aprovada';
-    }
-    
-    if (status === 'PENDENTE') {
-      return 'analise';
-    }
-    
+    if (dataReserva < hoje) return 'finalizada';
+    if (status === 'APROVADO') return 'aprovada';
+    if (status === 'PENDENTE') return 'analise';
     return 'analise';
   };
 
@@ -161,10 +63,7 @@ export default function MeusPedidos() {
     hoje.setHours(0, 0, 0, 0);
     dataReserva.setHours(0, 0, 0, 0);
     
-    if (dataReserva < hoje) {
-      return 'Concluída';
-    }
-    
+    if (dataReserva < hoje) return 'Concluída';
     if (status === 'APROVADO') return 'Aprovada';
     if (status === 'PENDENTE') return 'Em aprovação';
     if (status === 'CANCELADO') return 'Cancelada';
@@ -188,8 +87,13 @@ export default function MeusPedidos() {
 
   const cancelarReserva = async (id) => {
     if (!window.confirm("Tem certeza que deseja cancelar esta reserva?")) return;
-    setReservas(prev => prev.filter(r => r.id !== id));
-    addToast('success', 'Reserva cancelada com sucesso!');
+    try {
+      await api.delete(`/reservas/${id}`);
+      addToast('success', 'Reserva cancelada com sucesso!');
+      carregarReservas();
+    } catch (error) {
+      addToast('error', 'Erro ao cancelar reserva');
+    }
   };
 
   const editarReserva = (reserva) => {
@@ -231,7 +135,6 @@ export default function MeusPedidos() {
       ) : (
         <div className="solicitacoes-container">
           
-          {/* SEÇÃO 1: EM ANÁLISE - AMARELO */}
           <div className="solicitacao-card">
             <div className="card-header analise-header">
               <h2>Solicitações em análise</h2>
@@ -270,7 +173,6 @@ export default function MeusPedidos() {
             </div>
           </div>
 
-          {/* SEÇÃO 2: APROVADAS - VERDE */}
           <div className="solicitacao-card">
             <div className="card-header aprovada-header">
               <h2>Reservas aprovadas</h2>
@@ -309,7 +211,6 @@ export default function MeusPedidos() {
             </div>
           </div>
 
-          {/* SEÇÃO 3: FINALIZADAS - CINZA */}
           <div className="solicitacao-card">
             <div className="card-header finalizada-header">
               <h2>Reservas finalizadas</h2>

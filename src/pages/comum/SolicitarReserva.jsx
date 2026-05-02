@@ -1,11 +1,11 @@
-// src/pages/Reserva.jsx
+// src/pages/comum/SolicitarReserva.jsx
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
-import Toast from "../components/Toast";
-import "./reserva.css";
+import api from "../../services/api";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import Toast from "../../components/common/Toast";
+import "../styles/reserva.css";
 
-const API_URL = "/api/reservas";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SALAS = [
@@ -33,7 +33,8 @@ const INITIAL_FORM_STATE = {
   observacoes: "",
 };
 
-export default function Reserva() {
+export default function SolicitarReserva() {
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [form, setForm] = useState(INITIAL_FORM_STATE);
@@ -88,7 +89,7 @@ export default function Reserva() {
 
   const carregarReservas = async () => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await api.get("/reservas");
       setReservas(response.data);
     } catch (error) {
       console.error("ERRO ao carregar reservas:", error);
@@ -99,7 +100,6 @@ export default function Reserva() {
     carregarReservas();
   }, []);
 
-  // CARREGAR DADOS DA EDIÇÃO
   useEffect(() => {
     if (location.state?.editando && location.state?.reservaData) {
       const reserva = location.state.reservaData;
@@ -127,7 +127,6 @@ export default function Reserva() {
   }, [location, navigate]);
 
   const getFieldError = (fieldName) => {
-    // Data
     if (fieldName === "data") {
       if (!form.data) return "Data é obrigatória";
       if (form.data < today) return "Não é possível reservar em datas passadas";
@@ -257,12 +256,11 @@ export default function Reserva() {
       setLoading(true);
       
       if (isEditing && editingId) {
-        const reservaAtualizada = { ...reservaParaEnviar, status: "PENDENTE" };
-        await axios.put(`${API_URL}/${editingId}`, reservaAtualizada);
+        await api.put(`/reservas/${editingId}`, reservaParaEnviar);
         addToast('success', 'Reserva atualizada e voltou para análise!', '✏️ Atualizado');
         setTimeout(() => navigate("/meus-pedidos"), 1500);
       } else {
-        const response = await axios.post(API_URL, reservaParaEnviar);
+        const response = await api.post("/reservas", reservaParaEnviar);
         addToast('success', 'Reserva criada com sucesso!', '✅ Confirmado');
         setUltimaReserva(response.data);
         setShowSuccessModal(true);
