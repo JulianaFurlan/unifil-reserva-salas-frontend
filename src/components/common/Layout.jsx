@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // src/components/common/Layout.jsx
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -80,4 +81,25 @@ export default function Layout() {
       </div>
     </div>
   );
+=======
+import { Outlet } from "react-router-dom";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+import "./Layout.css";
+
+export default function Layout() {
+return (
+<div className="app">
+    <Header />
+    
+    <div className="main-layout">
+    <Sidebar />
+    
+    <main className="content-area">
+        <Outlet />
+    </main>
+    </div>
+</div>
+);
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 }

@@ -347,6 +347,7 @@
   }
 }
 
+<<<<<<< HEAD
 /* Responsivo */
 @media (max-width: 1100px) {
   .three-columns, .two-columns {
@@ -358,6 +359,9 @@
   }
 }
 
+=======
+/* Para telas menores */
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 @media (max-width: 640px) {
   .toast-container {
     left: 20px;
@@ -371,6 +375,7 @@
   }
 }
 
+<<<<<<< HEAD
 /* ==================== MODAL DE SUCESSO ==================== */
 .modal-overlay {
   position: fixed;
@@ -696,4 +701,15 @@
 
 .btn-cancelar:hover {
   background: #6b7280;
+=======
+/* Responsivo */
+@media (max-width: 1100px) {
+  .three-columns, .two-columns {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-title-container {
+    margin: -20px -20px 30px -20px;
+  }
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 }

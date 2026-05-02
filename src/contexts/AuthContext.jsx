@@ -12,16 +12,24 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
+<<<<<<< HEAD
     console.log('🔍 Carregando dados salvos - Token:', !!token, 'User:', !!userData);
     
+=======
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         api.defaults.headers.Authorization = `Bearer ${token}`;
+<<<<<<< HEAD
         console.log('✅ Usuário carregado do localStorage:', parsedUser.email);
       } catch (error) {
         console.error('❌ Erro ao carregar usuário:', error);
+=======
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
@@ -31,6 +39,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, senha) => {
     try {
+<<<<<<< HEAD
       console.log('📤 Enviando requisição para /auth/login');
       const response = await api.post('/auth/login', { email, senha });
       console.log('📥 Resposta recebida:', response.data);
@@ -43,6 +52,11 @@ export function AuthProvider({ children }) {
       }
       
       console.log('💾 Salvando token e usuário no localStorage');
+=======
+      const response = await api.post('/auth/login', { email, senha });
+      const { token, usuario } = response.data;
+      
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(usuario));
       api.defaults.headers.Authorization = `Bearer ${token}`;
@@ -50,7 +64,11 @@ export function AuthProvider({ children }) {
       
       return { success: true, user: usuario };
     } catch (error) {
+<<<<<<< HEAD
       console.error('❌ Erro no login:', error);
+=======
+      console.error('Erro no login:', error);
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
       return { 
         success: false, 
         message: error.response?.data?.message || 'Email ou senha inválidos' 
@@ -59,7 +77,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+<<<<<<< HEAD
     console.log('🔓 Fazendo logout');
+=======
+>>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     delete api.defaults.headers.Authorization;
