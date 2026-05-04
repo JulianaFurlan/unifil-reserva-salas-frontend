@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* src/components/common/Layout.css */
 
 .app {
@@ -7,32 +6,17 @@
   flex-direction: column;
   font-family: 'Inter', system-ui, sans-serif;
   background: #ffffff;
-=======
-.app {
-height: 100vh;
-display: flex;
-flex-direction: column;
-font-family: 'Inter', system-ui, sans-serif;
-background: #ffffff;
->>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 }
 
 /* LINHA LARANJA */
 .top-thin-bar {
-<<<<<<< HEAD
   height: 10px;
   background: #F27F20;
   width: 100%;
-=======
-height: 10px;
-background: #F27F20;
-width: 100%;
->>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 }
 
 /* FAIXA CINZA */
 .top-gray-bar {
-<<<<<<< HEAD
   height: 85px;
   background: #f3f2f3;
   display: flex;
@@ -64,45 +48,10 @@ width: 100%;
   font-weight: 600;
   color: #a9aab0;
   white-space: nowrap;
-=======
-height: 85px;
-background: #f3f2f3;
-display: flex;
-align-items: center;
-padding: 0 10px;
-gap: 15px;
-}
-
-.logo-container {
-display: flex;
-align-items: center;
-gap: 6px;
-}
-
-.logo-image {
-height: 100px;       
-width: auto;
-object-fit: contain;
-}
-
-.divider {
-font-size: 35px;
-color: #a9aab0;
-font-weight: 200px;
-padding: 1px 1px;
-}
-
-.university-name {
-font-size: 17px;
-font-weight: 600;
-color: #a9aab0;
-white-space: nowrap;
->>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 }
 
 /* SIDEBAR */
 .main-layout {
-<<<<<<< HEAD
   display: flex;
   flex: 1;
   overflow: hidden;
@@ -167,7 +116,7 @@ white-space: nowrap;
   box-shadow: 4px 0 0 #ffffff inset;   
 }
 
-/* USER SECTION - VERSÃO MELHORADA */
+/* USER SECTION */
 .user-section {
   padding: 18px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.25);
@@ -231,7 +180,7 @@ white-space: nowrap;
   margin-top: 2px;
 }
 
-/* BOTÃO SAIR MELHORADO */
+/* BOTÃO SAIR */
 .logout-btn {
   background: rgba(255, 255, 255, 0.15);
   border: none;
@@ -290,114 +239,4 @@ white-space: nowrap;
   .logo-image {
     height: 50px;
   }
-=======
-display: flex;
-flex: 1;
-overflow: hidden;
-}
-
-.sidebar {
-width: 280px;
-background: linear-gradient(to bottom, #F38021, #DF6F11);
-color: white;
-display: flex;
-flex-direction: column;
-transition: all 0.3s ease;
-}
-
-.sidebar-header {
-padding: 29px 24px;
-display: flex;
-align-items: center;
-gap: 12px;
-font-size: 18px;
-font-weight: 600;
-}
-
-.menu-list {
-flex: 1;
-padding: 12px 0;          
-}
-
-.menu-item {
-display: flex;
-align-items: center;
-gap: 14px;
-padding: 16px 24px;        
-font-size: 15.5px;
-font-weight: 550;
-color: white;
-text-decoration: none;
-transition: all 0.3s ease;
-margin: 2px 8px;           
-border-radius: 8px;       
-}
-
-.menu-item:hover {
-background: #fe963d;
-color: white;
-margin: 2px 0;             
-border-radius: 0;          
-font-weight: 600;
-box-shadow: 4px 0 0 #ffffff inset;  
-}
-
-.menu-item.active {
-background: #fe963d;
-color: white;
-margin: 2px 0;             
-border-radius: 0;          
-font-weight: 600;
-box-shadow: 4px 0 0 #ffffff inset;   
-}
-
-/* USER */
-.user-section {
-padding: 18px 20px;
-border-top: 1px solid rgba(255, 255, 255, 0.25);
-margin-top: auto;
-}
-
-.user-content {
-display: flex;
-align-items: center;
-gap: 14px;
-}
-
-.user-avatar {
-width: 46px;         
-height: 46px;
-border-radius: 50%;
-object-fit: cover;
-border: 2.5px solid rgba(255, 255, 255, 0.7);
-box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-flex-shrink: 0;
-}
-
-.user-info-sidebar {
-display: flex;
-flex-direction: column;
-}
-
-.greeting {
-font-size: 13.5px;
-font-weight: 400;
-opacity: 0.85;
-line-height: 1;
-}
-
-.user-name {
-font-size: 15.5px;
-font-weight: 600;
-color: white;
-line-height: 1.1;
-}
-
-.content-area {
-flex: 1;
-background: white;
-border-radius: 16px 0 0 0;
-padding: 30px 70px;
-overflow-y: auto;
->>>>>>> 8cf02fa45c6c9ec21fe2c580d8a58239630e6305
 }
