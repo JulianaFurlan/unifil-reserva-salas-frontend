@@ -21,7 +21,7 @@
   background: #f3f2f3;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 20px;
   gap: 15px;
 }
 
@@ -90,19 +90,17 @@
   color: white;
   text-decoration: none;
   transition: all 0.3s ease;
-  margin: 2px 8px;           
-  border-radius: 8px;       
+  margin: 3px 0;
+  border-radius: 0;
   background: none;
   border: none;
-  width: calc(100% - 16px);
+  width: 100%;
   cursor: pointer;
 }
 
 .menu-item:hover {
   background: #fe963d;
   color: white;
-  margin: 2px 0;             
-  border-radius: 0;          
   font-weight: 600;
   box-shadow: 4px 0 0 #ffffff inset;  
 }
@@ -110,8 +108,6 @@
 .menu-item.active {
   background: #fe963d;
   color: white;
-  margin: 2px 0;             
-  border-radius: 0;          
   font-weight: 600;
   box-shadow: 4px 0 0 #ffffff inset;   
 }
@@ -140,7 +136,6 @@
   flex-shrink: 0;
 }
 
-/* Placeholder quando não tem imagem */
 .user-avatar-placeholder {
   width: 46px;
   height: 46px;
@@ -180,7 +175,6 @@
   margin-top: 2px;
 }
 
-/* BOTÃO SAIR */
 .logout-btn {
   background: rgba(255, 255, 255, 0.15);
   border: none;
@@ -207,14 +201,68 @@
   overflow-y: auto;
 }
 
-/* Responsivo */
+/* ============================================================================
+   RESPONSIVIDADE COMPLETA
+   ============================================================================ */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .content-area {
+    padding: 24px 40px;
+  }
+  
+  .logo-image {
+    height: 70px;
+  }
+  
+  .divider {
+    font-size: 28px;
+  }
+  
+  .university-name {
+    font-size: 14px;
+  }
+  
+  .top-gray-bar {
+    height: 70px;
+    padding: 0 16px;
+  }
+}
+
+/* Mobile Grande (768px) */
 @media (max-width: 768px) {
   .sidebar {
     width: 80px;
+    position: fixed;
+    left: 0;
+    top: 85px;
+    height: calc(100vh - 85px);
+    z-index: 100;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+  }
+  
+  /* Sidebar colapsada */
+  .sidebar.collapsed {
+    transform: translateX(-80px);
   }
   
   .menu-item span {
     display: none;
+  }
+  
+  .menu-item {
+    justify-content: center;
+    padding: 16px 0;
+  }
+  
+  .sidebar-header span {
+    display: none;
+  }
+  
+  .sidebar-header {
+    justify-content: center;
+    padding: 20px 0;
   }
   
   .user-info-sidebar {
@@ -227,16 +275,121 @@
     font-size: 10px;
   }
   
+  .user-content {
+    justify-content: center;
+  }
+  
+  .user-avatar, .user-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+  
   .content-area {
-    padding: 20px;
+    margin-left: 80px;
+    padding: 20px 24px;
+    border-radius: 0;
+  }
+  
+  .main-layout {
+    overflow: visible;
   }
   
   .university-name {
-    font-size: 12px;
+    font-size: 10px;
     white-space: normal;
+    text-align: center;
   }
   
   .logo-image {
+    height: 40px;
+  }
+  
+  .divider {
+    font-size: 20px;
+  }
+  
+  .top-gray-bar {
+    height: 60px;
+    padding: 0 12px;
+  }
+  
+  .logo-container {
+    gap: 4px;
+  }
+}
+
+/* Mobile Pequeno (480px) */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 70px;
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+  
+  .sidebar.collapsed {
+    transform: translateX(-70px);
+  }
+  
+  .content-area {
+    margin-left: 70px;
+    padding: 16px;
+  }
+  
+  .menu-item svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .user-avatar, .user-avatar-placeholder {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .top-gray-bar {
     height: 50px;
+  }
+  
+  .logo-image {
+    height: 35px;
+  }
+  
+  .divider {
+    font-size: 16px;
+  }
+  
+  .university-name {
+    font-size: 8px;
+  }
+  
+  .logout-btn {
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+  
+  .sidebar-header {
+    padding: 15px 0;
+  }
+  
+  .menu-item {
+    padding: 12px 0;
+  }
+}
+
+/* Botão para toggle do menu em mobile (adicione no Layout.jsx se quiser) */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

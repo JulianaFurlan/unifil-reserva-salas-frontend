@@ -44,57 +44,52 @@ export default function MeusPedidos() {
     carregarReservas();
   }, []);
 
-  const getStatusCategoria = (status, data) => {
-    const hoje = new Date();
-    const dataReserva = new Date(data);
-    
-    hoje.setHours(0, 0, 0, 0);
-    dataReserva.setHours(0, 0, 0, 0);
-    
-    if (dataReserva < hoje) return 'finalizada';
-    if (status === 'APROVADO') return 'aprovada';
-    if (status === 'PENDENTE') return 'analise';
-    return 'analise';
-  };
+const getStatusCategoria = (status, data) => {
+  const hoje = new Date();
+  const dataReserva = new Date(data + 'T23:59:59'); // evita bug de timezone
+  hoje.setHours(0, 0, 0, 0);
 
-  const getStatusTexto = (status, data) => {
-    const hoje = new Date();
-    const dataReserva = new Date(data);
-    hoje.setHours(0, 0, 0, 0);
-    dataReserva.setHours(0, 0, 0, 0);
-    
-    if (dataReserva < hoje) return 'Concluída';
-    if (status === 'APROVADO') return 'Aprovada';
-    if (status === 'PENDENTE') return 'Em aprovação';
-    if (status === 'CANCELADO') return 'Cancelada';
-    if (status === 'REJEITADO') return 'Negada';
-    return status;
-  };
+  if (status === 'CANCELADO') return 'finalizada';
+  if (status === 'REJEITADO') return 'finalizada';
+  if (dataReserva < hoje) return 'finalizada';     // data passou (independente do status)
+  if (status === 'APROVADO') return 'aprovada';
+  return 'analise'; // PENDENTE com data futura
+};
 
-  const getStatusClass = (status, data) => {
-    const hoje = new Date();
-    const dataReserva = new Date(data);
-    hoje.setHours(0, 0, 0, 0);
-    dataReserva.setHours(0, 0, 0, 0);
-    
-    if (dataReserva < hoje) return 'status-concluida';
-    if (status === 'APROVADO') return 'status-aprovada';
-    if (status === 'PENDENTE') return 'status-analise';
-    if (status === 'CANCELADO') return 'status-cancelada';
-    if (status === 'REJEITADO') return 'status-negada';
-    return '';
-  };
+const getStatusTexto = (status, data) => {
+  const hoje = new Date();
+  const dataReserva = new Date(data + 'T23:59:59');
+  hoje.setHours(0, 0, 0, 0);
 
-  const cancelarReserva = async (id) => {
-    if (!window.confirm("Tem certeza que deseja cancelar esta reserva?")) return;
-    try {
-      await api.delete(`/reservas/${id}`);
-      addToast('success', 'Reserva cancelada com sucesso!');
-      carregarReservas();
-    } catch (error) {
-      addToast('error', 'Erro ao cancelar reserva');
-    }
-  };
+  if (status === 'CANCELADO') return 'Cancelada';
+  if (status === 'REJEITADO') return 'Negada';
+  if (dataReserva < hoje) return 'Concluída';
+  if (status === 'APROVADO') return 'Aprovada';
+  return 'Em aprovação';
+};
+
+const getStatusClass = (status, data) => {
+  const hoje = new Date();
+  const dataReserva = new Date(data + 'T23:59:59');
+  hoje.setHours(0, 0, 0, 0);
+
+  if (status === 'CANCELADO') return 'status-cancelada';
+  if (status === 'REJEITADO') return 'status-negada';
+  if (dataReserva < hoje) return 'status-concluida';
+  if (status === 'APROVADO') return 'status-aprovada';
+  return 'status-analise';
+};
+
+const cancelarReserva = async (id) => {
+  if (!window.confirm("Tem certeza que deseja cancelar esta reserva?")) return;
+  try {
+    await api.put(`/reservas/${id}/cancelar`); // ← PUT em vez de DELETE
+    addToast('success', 'Reserva cancelada com sucesso!');
+    carregarReservas();
+  } catch (error) {
+    addToast('error', 'Erro ao cancelar reserva');
+  }
+};
 
   const editarReserva = (reserva) => {
     if (reserva.status === 'APROVADO') {
@@ -145,29 +140,39 @@ export default function MeusPedidos() {
                 <p className="empty-message">Nenhuma solicitação em análise</p>
               ) : (
                 reservasEmAnalise.map(reserva => (
-                  <div key={reserva.id} className="solicitacao-item">
-                    <div className="solicitacao-info">
-                      <div className="solicitacao-titulo">
-                        <strong>{reserva.sala}</strong>
-                      </div>
-                      <div className="solicitacao-detalhes">
-                        {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
-                      </div>
-                      <div className="solicitacao-status">
-                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
-                          {getStatusTexto(reserva.status, reserva.data)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="solicitacao-acoes">
-                      <button className="btn-editar" onClick={() => editarReserva(reserva)} title="Editar">
-                        <AiOutlineEdit size={20} />
-                      </button>
-                      <button className="btn-excluir" onClick={() => cancelarReserva(reserva.id)} title="Cancelar">
-                        <AiOutlineDelete size={20} />
-                      </button>
-                    </div>
-                  </div>
+<div key={reserva.id} className="solicitacao-item">
+  <div className="solicitacao-info">
+    <div className="solicitacao-titulo">
+      <strong>{reserva.sala}</strong>
+    </div>
+    <div className="solicitacao-detalhes">
+      {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
+    </div>
+    <div className="solicitacao-status">
+      <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
+        {getStatusTexto(reserva.status, reserva.data)}
+      </span>
+    </div>
+  </div>
+  
+  <div className="solicitacao-right">
+    <div className="solicitacao-acoes">
+      <button className="btn-editar" onClick={() => editarReserva(reserva)} title="Editar">
+        <AiOutlineEdit size={20} />
+      </button>
+      <button className="btn-excluir" onClick={() => cancelarReserva(reserva.id)} title="Cancelar">
+        <AiOutlineDelete size={20} />
+      </button>
+    </div>
+    
+    {/* ABERTO POR - ABAIXO DOS BOTÕES */}
+    {reserva.usuarioNome && (
+      <div className="solicitacao-aberto-por">
+        Aberto por: {reserva.usuarioEmail}
+      </div>
+    )}
+  </div>
+</div>
                 ))
               )}
             </div>

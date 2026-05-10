@@ -8,16 +8,29 @@ import "../styles/reserva.css";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const SALAS = [
-  "Lab 2 - SEDE",
-  "Lab 3 - SEDE", 
-  "Lab 4 - SEDE",
-  "Sala 101 - SEDE",
-  "Sala 109 - SEDE",
-  "1028 - Ipollon II",
-  "1029 - Ipollon II",
-  "1030 - Ipollon II"
-];
+const SALAS_POR_BLOCO = {
+  "SEDE": [
+    "Lab 2",
+    "Lab 3",
+    "Lab 4",
+    "Lab 5",
+    "Lab 6",
+    "Lab 7",
+    "Lab 8",
+    "Sala 101",
+    "Sala 109",
+  ],
+  "Ipollon II": [
+    "1027",
+    "1028",
+    "1029",
+    "1030",
+    "1031",
+    "1032",
+    "1033",
+    "1034",
+  ]
+};
 
 const INITIAL_FORM_STATE = {
   data: "",
@@ -239,29 +252,37 @@ export default function SolicitarReserva() {
       return;
     }
 
-    const reservaParaEnviar = {
-      data: form.data,
-      horaInicio: form.horaInicio,
-      horaFim: form.horaFim,
-      sala: form.sala,
-      nome: form.nome,
-      email: form.email,
-      telefone: form.telefone.replace(/\D/g, ""),
-      departamento: form.departamento,
-      finalidade: getFinalidadeTexto(form.finalidade, form.finalidadeOutro),
-      observacoes: form.observacoes,
-    };
+  const reservaParaEnviar = {
+    data: form.data,
+    horaInicio: form.horaInicio,
+    horaFim: form.horaFim,
+    sala: form.sala,
+    nome: form.nome,
+    email: form.email,
+    telefone: form.telefone.replace(/\D/g, ""),
+    departamento: form.departamento,
+    finalidade: getFinalidadeTexto(form.finalidade, form.finalidadeOutro),
+    observacoes: form.observacoes,
+    // (usuário da sessão)
+    usuarioId: user?.id,
+    usuarioEmail: user?.email,
+    usuarioNome: user?.nome,
+  };
+
+    if (isEditing && editingId) {
+      reservaParaEnviar.id = editingId;
+    }
 
     try {
       setLoading(true);
       
       if (isEditing && editingId) {
         await api.put(`/reservas/${editingId}`, reservaParaEnviar);
-        addToast('success', 'Reserva atualizada e voltou para análise!', '✏️ Atualizado');
+        addToast('success', 'Reserva atualizada e voltou para análise!', 'Atualizado');
         setTimeout(() => navigate("/meus-pedidos"), 1500);
       } else {
         const response = await api.post("/reservas", reservaParaEnviar);
-        addToast('success', 'Reserva criada com sucesso!', '✅ Confirmado');
+        addToast('success', 'Reserva criada com sucesso!', 'Confirmado');
         setUltimaReserva(response.data);
         setShowSuccessModal(true);
         setForm(INITIAL_FORM_STATE);
@@ -270,7 +291,7 @@ export default function SolicitarReserva() {
         carregarReservas();
       }
     } catch (error) {
-      addToast('error', isEditing ? 'Erro ao atualizar reserva' : 'Erro ao criar reserva', '❌ Erro');
+      addToast('error', isEditing ? 'Erro ao atualizar reserva' : 'Erro ao criar reserva', 'Erro');
     } finally {
       setLoading(false);
     }
@@ -321,32 +342,64 @@ export default function SolicitarReserva() {
       </div>
 
       <form onSubmit={handleSubmit} className="form-container">
-        <div className="form-row three-columns">
-          <div className="form-group">
-            <label>Data <span className="required">*</span></label>
-            <input type="date" name="data" value={form.data} onChange={handleChange} onBlur={handleBlur} min={today} />
-            {errors.data && <p className="error-message">{errors.data}</p>}
-          </div>
-          <div className="form-group">
-            <label>Horário <span className="required">*</span></label>
-            <div className="time-range">
-              <input type="time" name="horaInicio" value={form.horaInicio} onChange={handleChange} onBlur={handleBlur} />
-              <span>até</span>
-              <input type="time" name="horaFim" value={form.horaFim} onChange={handleChange} onBlur={handleBlur} />
-            </div>
-            {errors.horaInicio && <p className="error-message">{errors.horaInicio}</p>}
-            {errors.horaFim && <p className="error-message">{errors.horaFim}</p>}
-            {errors.conflict && <p className="error-message">{errors.conflict}</p>}
-          </div>
-          <div className="form-group">
-            <label>Sala <span className="required">*</span></label>
-            <select name="sala" value={form.sala} onChange={handleChange} onBlur={handleBlur}>
-              <option value="">Selecione uma sala...</option>
-              {SALAS.map(sala => <option key={sala} value={sala}>{sala}</option>)}
-            </select>
-            {errors.sala && <p className="error-message">{errors.sala}</p>}
-          </div>
+      <div className="form-row three-columns">
+        {/* Data - mantém */}
+        <div className="form-group">
+          <label>Data <span className="required">*</span></label>
+          <input type="date" name="data" value={form.data} onChange={handleChange} onBlur={handleBlur} min={today} />
+          {errors.data && <p className="error-message">{errors.data}</p>}
         </div>
+
+        {/* Horário - mantém */}
+        <div className="form-group">
+          <label>Horário <span className="required">*</span></label>
+          <div className="time-range">
+            <input type="time" name="horaInicio" value={form.horaInicio} onChange={handleChange} onBlur={handleBlur} />
+            <span>até</span>
+            <input type="time" name="horaFim" value={form.horaFim} onChange={handleChange} onBlur={handleBlur} />
+          </div>
+          {errors.horaInicio && <p className="error-message">{errors.horaInicio}</p>}
+          {errors.horaFim && <p className="error-message">{errors.horaFim}</p>}
+          {errors.conflict && <p className="error-message">{errors.conflict}</p>}
+        </div>
+
+        {/* Bloco + Sala juntos na mesma coluna */}
+        <div className="form-group">
+          <label>Localização <span className="required">*</span></label>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <select 
+              name="bloco" 
+              value={form.bloco} 
+              onChange={(e) => {
+                setForm(prev => ({ ...prev, bloco: e.target.value, sala: "" }));
+              }}
+              style={{ flex: 1 }}
+            >
+              <option value="">Bloco</option>
+              {Object.keys(SALAS_POR_BLOCO).map(bloco => (
+                <option key={bloco} value={bloco}>{bloco}</option>
+              ))}
+            </select>
+
+            <select 
+              name="sala" 
+              value={form.sala} 
+              onChange={handleChange} 
+              onBlur={handleBlur}
+              disabled={!form.bloco}
+              style={{ flex: 2 }}
+            >
+              <option value="">
+                {form.bloco ? "Selecione a sala..." : "Sala"}
+              </option>
+              {(SALAS_POR_BLOCO[form.bloco] || []).map(sala => (
+                <option key={sala} value={sala}>{sala}</option>
+              ))}
+            </select>
+          </div>
+          {errors.sala && <p className="error-message">{errors.sala}</p>}
+        </div>
+      </div>
 
         <h2 className="section-title">Informações da Reserva</h2>
 
