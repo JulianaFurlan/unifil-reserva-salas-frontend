@@ -4,6 +4,7 @@ import api from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import Toast from "../../components/common/Toast";
 import { AiOutlineCheck, AiOutlineClose, AiOutlineSearch } from "react-icons/ai";
+import { gerarPdfOcupacao } from '../../utils/gerarPdfOcupacao';
 import "../styles/reserva.css";
 
 export default function GerenciarSolicitacoes() {
@@ -199,6 +200,9 @@ export default function GerenciarSolicitacoes() {
 
       <div className="page-title-container">
         <h1 className="page-title">Gerenciar Solicitações</h1>
+        <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservas, filtroData || null)}>
+          Gerar PDF
+        </button>
       </div>
 
       <div className="filtros-container">
