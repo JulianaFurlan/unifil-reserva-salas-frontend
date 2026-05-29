@@ -34,8 +34,8 @@ const SALAS_POR_BLOCO = {
 
 const INITIAL_FORM_STATE = {
   data: "",
-  horaInicio: "19:00",
-  horaFim: "20:00",
+  horaInicio: "",
+  horaFim: "",
   sala: "",
   nome: "",
   email: "",
@@ -102,7 +102,7 @@ export default function SolicitarReserva() {
 
   const carregarReservas = async () => {
     try {
-      const response = await api.get("/reservas");
+      const response = await api.get("/reservas/todas");
       setReservas(response.data);
     } catch (error) {
       console.error("ERRO ao carregar reservas:", error);
@@ -147,19 +147,31 @@ export default function SolicitarReserva() {
       return null;
     }
     if (fieldName === "horaInicio") {
-      if (!form.horaInicio) return "Horário inicial é obrigatório";
+      if (!form.horaInicio) return "Horário de início é obrigatório";
+      if (form.data === today) {
+        const agora = new Date();
+        const [hInicio, mInicio] = form.horaInicio.split(":").map(Number);
+        const minutosInicio = hInicio * 60 + mInicio;
+        const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+        if (minutosInicio < minutosAgora) return "Este horário já passou para hoje"; 
+      }
       return null;
     }
     if (fieldName === "horaFim") {
       if (!form.horaFim) return "Horário final é obrigatório";
-      if (form.horaInicio && form.horaInicio >= form.horaFim) {
-        return "Horário de início deve ser anterior ao de fim";
-      }
+
       if (form.horaInicio && form.horaFim) {
         const [hInicio, mInicio] = form.horaInicio.split(":").map(Number);
         const [hFim, mFim] = form.horaFim.split(":").map(Number);
-        const diff = (hFim * 60 + mFim) - (hInicio * 60 + mInicio);
-        if (diff < 10) return "A reserva deve ter no mínimo 10 minutos de duração";
+        const minutosInicio = hInicio * 60 + mInicio;
+        const minutosFim = hFim * 60 + mFim;
+
+        if (minutosFim <= minutosInicio) {
+          return "Horário de fim deve ser após o início";
+        }
+        if (minutosFim - minutosInicio < 10) {
+          return "A reserva deve ter no mínimo 10 minutos de duração";
+        }
       }
       return null;
     }
@@ -196,11 +208,16 @@ export default function SolicitarReserva() {
       return null;
     }
     if (fieldName === "conflict" && form.data && form.horaInicio && form.horaFim && form.sala) {
-      const conflito = reservas.some(r => 
-        r.sala === form.sala && 
-        r.data === form.data && 
-        !(form.horaFim <= r.horaInicio || form.horaInicio >= r.horaFim)
-      );
+      const conflito = reservas.some(r => {
+        // Ignora a própria reserva sendo editada
+        if (editingId && r.id === editingId) return false;
+
+        return (
+          r.sala === form.sala &&
+          r.data === form.data &&
+          !(form.horaFim <= r.horaInicio || form.horaInicio >= r.horaFim)
+        );
+      });
       if (conflito) return "Esta sala já está reservada neste horário";
       return null;
     }

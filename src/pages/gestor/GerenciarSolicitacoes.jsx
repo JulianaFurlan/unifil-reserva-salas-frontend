@@ -12,15 +12,16 @@ export default function GerenciarSolicitacoes() {
   const [reservas, setReservas] = useState([]);
   const [reservasFiltradas, setReservasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [motivoRejeicao, setMotivoRejeicao] = useState("");
   const [toasts, setToasts] = useState([]);
-  
+
   const [modalConfig, setModalConfig] = useState({
     show: false,
     tipo: null,
     reservaId: null,
     reservaInfo: null
   });
-  
+
   const [filtroSala, setFiltroSala] = useState("");
   const [filtroData, setFiltroData] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
@@ -35,14 +36,14 @@ export default function GerenciarSolicitacoes() {
   };
 
   const formatarHorario = (hora) => {
-  if (!hora) return "";
-  return hora.split(":").slice(0, 2).join(":");
-};
+    if (!hora) return "";
+    return hora.split(":").slice(0, 2).join(":");
+  };
 
   const carregarReservas = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/reservas");
+      const response = await api.get("/reservas/todas");
       setReservas(response.data);
       setReservasFiltradas(response.data);
     } catch (error) {
@@ -52,28 +53,26 @@ export default function GerenciarSolicitacoes() {
     }
   };
 
-  
-
   useEffect(() => {
     carregarReservas();
   }, []);
 
   useEffect(() => {
     let filtradas = [...reservas];
-    
+
     if (filtroSala) {
-      filtradas = filtradas.filter(r => 
+      filtradas = filtradas.filter(r =>
         r.sala?.toLowerCase().includes(filtroSala.toLowerCase())
       );
     }
-    
+
     if (filtroData) {
       filtradas = filtradas.filter(r => r.data === filtroData);
     }
-    
+
     if (filtroTexto) {
       const texto = filtroTexto.toLowerCase();
-      filtradas = filtradas.filter(r => 
+      filtradas = filtradas.filter(r =>
         r.nome?.toLowerCase().includes(texto) ||
         r.email?.toLowerCase().includes(texto) ||
         r.finalidade?.toLowerCase().includes(texto) ||
@@ -81,11 +80,12 @@ export default function GerenciarSolicitacoes() {
         r.usuarioNome?.toLowerCase().includes(texto)
       );
     }
-    
+
     setReservasFiltradas(filtradas);
   }, [filtroSala, filtroData, filtroTexto, reservas]);
 
   const abrirModalConfirmacao = (tipo, reserva) => {
+    setMotivoRejeicao("");
     setModalConfig({
       show: true,
       tipo: tipo,
@@ -95,23 +95,24 @@ export default function GerenciarSolicitacoes() {
   };
 
   const fecharModal = () => {
-    setModalConfig({
-      show: false,
-      tipo: null,
-      reservaId: null,
-      reservaInfo: null
-    });
+    setModalConfig({ show: false, tipo: null, reservaId: null, reservaInfo: null });
+    setMotivoRejeicao("");
   };
 
   const confirmarAcao = async () => {
     const { tipo, reservaId } = modalConfig;
-    
+
+    if (tipo === 'rejeitar' && !motivoRejeicao.trim()) {
+      addToast('warning', 'Informe o motivo da rejeição');
+      return;
+    }
+
     try {
       if (tipo === 'aprovar') {
         await api.put(`/reservas/${reservaId}/aprovar`);
         addToast('success', 'Reserva aprovada com sucesso', 'Aprovada');
       } else {
-        await api.put(`/reservas/${reservaId}/rejeitar`);
+        await api.put(`/reservas/${reservaId}/rejeitar`, { motivo: motivoRejeicao });
         addToast('success', 'Reserva rejeitada', 'Rejeitada');
       }
       carregarReservas();
@@ -131,21 +132,22 @@ export default function GerenciarSolicitacoes() {
   const calcularDuracao = (horaInicio, horaFim) => {
     const [hInicio, mInicio] = horaInicio.split(":").map(Number);
     const [hFim, mFim] = horaFim.split(":").map(Number);
-    
+
     let minutos = (hFim * 60 + mFim) - (hInicio * 60 + mInicio);
-    
+
     const horas = Math.floor(minutos / 60);
     const minutosRestantes = minutos % 60;
-    
+
     if (horas > 0) {
       return `${horas} hora${horas > 1 ? 's' : ''}${minutosRestantes > 0 ? ` e ${minutosRestantes} min` : ''}`;
     }
     return `${minutos} minutos`;
   };
 
-    const reservasPendentes = reservasFiltradas
-      .filter(r => r.status === "PENDENTE")
-      .sort((a, b) => new Date(a.data) - new Date(b.data));
+  const reservasPendentes = reservasFiltradas
+    .filter(r => r.status === "PENDENTE")
+    .sort((a, b) => new Date(a.data) - new Date(b.data));
+
   const limparFiltros = () => {
     setFiltroSala("");
     setFiltroData("");
@@ -156,36 +158,66 @@ export default function GerenciarSolicitacoes() {
 
   return (
     <>
+      {/* TOAST NOTIFICATIONS */}
       <div className="toast-container">
         {toasts.map(toast => (
-          <Toast key={toast.id} id={toast.id} type={toast.type} title={toast.title} message={toast.message} onClose={removeToast} duration={3000} />
+          <Toast
+            key={toast.id}
+            id={toast.id}
+            type={toast.type}
+            title={toast.title}
+            message={toast.message}
+            onClose={removeToast}
+            duration={3000}
+          />
         ))}
       </div>
 
+      {/* MODAL DE CONFIRMAÇÃO */}
       {modalConfig.show && (
         <div className="modal-overlay" onClick={fecharModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-icon">
               {modalConfig.tipo === 'aprovar' ? (
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="32" cy="32" r="30" fill="#22c55e" stroke="#16a34a" strokeWidth="2"/>
-                  <path d="M24 32L30 38L42 26" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                  <circle cx="32" cy="32" r="30" fill="#22c55e" stroke="#16a34a" strokeWidth="2" />
+                  <path d="M24 32L30 38L42 26" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               ) : (
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="32" cy="32" r="30" fill="#ef4444" stroke="#dc2626" strokeWidth="2"/>
-                  <path d="M24 24L40 40M40 24L24 40" stroke="white" strokeWidth="4" strokeLinecap="round"/>
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                  <circle cx="32" cy="32" r="30" fill="#ef4444" stroke="#dc2626" strokeWidth="2" />
+                  <path d="M24 24L40 40M40 24L24 40" stroke="white" strokeWidth="4" strokeLinecap="round" />
                 </svg>
               )}
             </div>
+
             <h3 className="modal-title">
               {modalConfig.tipo === 'aprovar' ? 'Aprovar Reserva' : 'Rejeitar Reserva'}
             </h3>
+
             <p className="modal-message">
-              {modalConfig.tipo === 'aprovar' 
-                ? 'Você tem certeza que deseja APROVAR esta reserva?' 
-                : 'Você tem certeza que deseja REJEITAR esta reserva?'}
+              {modalConfig.tipo === 'aprovar'
+                ? 'Você tem certeza que deseja APROVAR esta reserva?'
+                : 'Informe o motivo da rejeição para o solicitante.'}
             </p>
+
+            {/* Campo de motivo - apenas para rejeição */}
+            {modalConfig.tipo === 'rejeitar' && (
+              <div className="modal-rejeicao-container">
+                <textarea
+                  className="modal-rejeicao-textarea"
+                  placeholder="Ex: Sala já reservada por outro departamento..."
+                  value={motivoRejeicao}
+                  onChange={(e) => setMotivoRejeicao(e.target.value)}
+                  maxLength={200}
+                  rows={3}
+                />
+                <div className="modal-rejeicao-contador">
+                  {motivoRejeicao.length}/200 caracteres
+                </div>
+              </div>
+            )}
+
             <div className="modal-buttons">
               <button className="modal-btn modal-btn-primary" onClick={confirmarAcao}>
                 {modalConfig.tipo === 'aprovar' ? 'Sim, aprovar' : 'Sim, rejeitar'}
@@ -198,6 +230,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
+      {/* CABEÇALHO */}
       <div className="page-title-container">
         <h1 className="page-title">Gerenciar Solicitações</h1>
         <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservas, filtroData || null)}>
@@ -205,6 +238,7 @@ export default function GerenciarSolicitacoes() {
         </button>
       </div>
 
+      {/* FILTROS */}
       <div className="filtros-container">
         <div className="filtros-row">
           <div className="filtro-group">
@@ -251,8 +285,9 @@ export default function GerenciarSolicitacoes() {
         </div>
       </div>
 
+      {/* LISTAGEM DE RESERVAS PENDENTES */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "60px" }}>Carregando solicitações...</div>
+        <div className="loading-state">Carregando solicitações...</div>
       ) : (
         <div className="solicitacoes-gestor-container">
           {reservasPendentes.length === 0 ? (
@@ -263,77 +298,77 @@ export default function GerenciarSolicitacoes() {
           ) : (
             <div className="cards-gestor">
               {reservasPendentes.map(reserva => (
-        <div className="card-solicitacao">
-          <div className="card-header-gestor">
-            <div className="card-titulo">
-              <h3>{reserva.sala}</h3>
-              <span className="card-data">{formatarData(reserva.data)}</span>
-            </div>
-            <div className="card-header-right">
-              <div className="card-duracao">
-                {calcularDuracao(reserva.horaInicio, reserva.horaFim)}
-              </div>
-              <div className="card-aberto-header">
-                <span className="aberto-header-label">Aberto por: </span>
-                <span className="aberto-header-valor">{reserva.usuarioEmail || reserva.email}</span>
-              </div>
-            </div>
-          </div>
+                <div key={reserva.id} className="card-solicitacao">
+                  <div className="card-header-gestor">
+                    <div className="card-titulo">
+                      <h3>{reserva.sala}</h3>
+                      <span className="card-data">{formatarData(reserva.data)}</span>
+                    </div>
+                    <div className="card-header-right">
+                      <div className="card-duracao">
+                        {calcularDuracao(reserva.horaInicio, reserva.horaFim)}
+                      </div>
+                      <div className="card-aberto-header">
+                        <span className="aberto-header-label">Aberto por: </span>
+                        <span className="aberto-header-valor">{reserva.usuarioEmail || reserva.email}</span>
+                      </div>
+                    </div>
+                  </div>
 
-          <div className="card-info-grid">
-            <div className="info-item">
-              <span className="info-label">Horário</span>
-              <span className="info-value horario-valor">
-                {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
-              </span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Solicitante</span>
-              <span className="info-value">{reserva.nome}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Departamento</span>
-              <span className="info-value">{reserva.departamento || "-"}</span>
-            </div>
-          </div>
+                  <div className="card-info-grid">
+                    <div className="info-item">
+                      <span className="info-label">Horário</span>
+                      <span className="info-value horario-valor">
+                        {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Solicitante</span>
+                      <span className="info-value">{reserva.nome}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Departamento</span>
+                      <span className="info-value">{reserva.departamento || "-"}</span>
+                    </div>
+                  </div>
 
-          <div className="card-solicitante">
-            <div className="solicitante-grid">
-              <div className="solicitante-item">
-                <span className="solicitante-label">Email informado</span>
-                <span className="solicitante-valor">{reserva.email}</span>
-              </div>
-              <div className="solicitante-item">
-                <span className="solicitante-label">Finalidade</span>
-                <span className="solicitante-valor">{reserva.finalidade}</span>
-              </div>
-              {reserva.telefone && (
-                <div className="solicitante-item">
-                  <span className="solicitante-label">Telefone</span>
-                  <span className="solicitante-valor">{reserva.telefone}</span>
+                  <div className="card-solicitante">
+                    <div className="solicitante-grid">
+                      <div className="solicitante-item">
+                        <span className="solicitante-label">Email informado</span>
+                        <span className="solicitante-valor">{reserva.email}</span>
+                      </div>
+                      <div className="solicitante-item">
+                        <span className="solicitante-label">Finalidade</span>
+                        <span className="solicitante-valor">{reserva.finalidade}</span>
+                      </div>
+                      {reserva.telefone && (
+                        <div className="solicitante-item">
+                          <span className="solicitante-label">Telefone</span>
+                          <span className="solicitante-valor">{reserva.telefone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {reserva.observacoes && (
+                    <div className="card-observacoes">
+                      <span className="observacoes-label">Observações</span>
+                      <p className="observacoes-texto">{reserva.observacoes}</p>
+                    </div>
+                  )}
+
+                  <div className="card-acoes">
+                    <button className="btn-aprovar" onClick={() => abrirModalConfirmacao('aprovar', reserva)}>
+                      <AiOutlineCheck size={18} />
+                      Aprovar
+                    </button>
+                    <button className="btn-rejeitar" onClick={() => abrirModalConfirmacao('rejeitar', reserva)}>
+                      <AiOutlineClose size={18} />
+                      Rejeitar
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {reserva.observacoes && (
-            <div className="card-observacoes">
-              <span className="observacoes-label">Observações</span>
-              <p className="observacoes-texto">{reserva.observacoes}</p>
-            </div>
-          )}
-
-          <div className="card-acoes">
-            <button className="btn-aprovar" onClick={() => abrirModalConfirmacao('aprovar', reserva)}>
-              <AiOutlineCheck size={18} />
-              Aprovar
-            </button>
-            <button className="btn-rejeitar" onClick={() => abrirModalConfirmacao('rejeitar', reserva)}>
-              <AiOutlineClose size={18} />
-              Rejeitar
-            </button>
-          </div>
-        </div>
               ))}
             </div>
           )}

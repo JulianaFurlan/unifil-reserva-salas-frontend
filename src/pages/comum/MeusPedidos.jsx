@@ -44,52 +44,52 @@ export default function MeusPedidos() {
     carregarReservas();
   }, []);
 
-const getStatusCategoria = (status, data) => {
-  const hoje = new Date();
-  const dataReserva = new Date(data + 'T23:59:59'); // evita bug de timezone
-  hoje.setHours(0, 0, 0, 0);
+  const getStatusCategoria = (status, data) => {
+    const hoje = new Date();
+    const dataReserva = new Date(data + 'T23:59:59');
+    hoje.setHours(0, 0, 0, 0);
 
-  if (status === 'CANCELADO') return 'finalizada';
-  if (status === 'REJEITADO') return 'finalizada';
-  if (dataReserva < hoje) return 'finalizada';     // data passou (independente do status)
-  if (status === 'APROVADO') return 'aprovada';
-  return 'analise'; // PENDENTE com data futura
-};
+    if (status === 'CANCELADO') return 'finalizada';
+    if (status === 'REJEITADO') return 'finalizada';
+    if (dataReserva < hoje) return 'finalizada';
+    if (status === 'APROVADO') return 'aprovada';
+    return 'analise';
+  };
 
-const getStatusTexto = (status, data) => {
-  const hoje = new Date();
-  const dataReserva = new Date(data + 'T23:59:59');
-  hoje.setHours(0, 0, 0, 0);
+  const getStatusTexto = (status, data) => {
+    const hoje = new Date();
+    const dataReserva = new Date(data + 'T23:59:59');
+    hoje.setHours(0, 0, 0, 0);
 
-  if (status === 'CANCELADO') return 'Cancelada';
-  if (status === 'REJEITADO') return 'Negada';
-  if (dataReserva < hoje) return 'Concluída';
-  if (status === 'APROVADO') return 'Aprovada';
-  return 'Em aprovação';
-};
+    if (status === 'CANCELADO') return 'Cancelada';
+    if (status === 'REJEITADO') return 'Negada';
+    if (dataReserva < hoje) return 'Concluída';
+    if (status === 'APROVADO') return 'Aprovada';
+    return 'Em aprovação';
+  };
 
-const getStatusClass = (status, data) => {
-  const hoje = new Date();
-  const dataReserva = new Date(data + 'T23:59:59');
-  hoje.setHours(0, 0, 0, 0);
+  const getStatusClass = (status, data) => {
+    const hoje = new Date();
+    const dataReserva = new Date(data + 'T23:59:59');
+    hoje.setHours(0, 0, 0, 0);
 
-  if (status === 'CANCELADO') return 'status-cancelada';
-  if (status === 'REJEITADO') return 'status-negada';
-  if (dataReserva < hoje) return 'status-concluida';
-  if (status === 'APROVADO') return 'status-aprovada';
-  return 'status-analise';
-};
+    if (status === 'CANCELADO') return 'status-cancelada';
+    if (status === 'REJEITADO') return 'status-negada';
+    if (dataReserva < hoje) return 'status-concluida';
+    if (status === 'APROVADO') return 'status-aprovada';
+    return 'status-analise';
+  };
 
-const cancelarReserva = async (id) => {
-  if (!window.confirm("Tem certeza que deseja cancelar esta reserva?")) return;
-  try {
-    await api.put(`/reservas/${id}/cancelar`); // ← PUT em vez de DELETE
-    addToast('success', 'Reserva cancelada com sucesso!');
-    carregarReservas();
-  } catch (error) {
-    addToast('error', 'Erro ao cancelar reserva');
-  }
-};
+  const cancelarReserva = async (id) => {
+    if (!window.confirm("Tem certeza que deseja cancelar esta reserva?")) return;
+    try {
+      await api.put(`/reservas/${id}/cancelar`);
+      addToast('success', 'Reserva cancelada com sucesso!');
+      carregarReservas();
+    } catch (error) {
+      addToast('error', 'Erro ao cancelar reserva');
+    }
+  };
 
   const editarReserva = (reserva) => {
     if (reserva.status === 'APROVADO') {
@@ -100,12 +100,12 @@ const cancelarReserva = async (id) => {
         "Deseja continuar?"
       )) return;
     }
-    
-    navigate("/solicitar-reserva", { 
-      state: { 
+
+    navigate("/solicitar-reserva", {
+      state: {
         editando: true,
-        reservaData: reserva 
-      } 
+        reservaData: reserva
+      }
     });
   };
 
@@ -117,7 +117,15 @@ const cancelarReserva = async (id) => {
     <>
       <div className="toast-container">
         {toasts.map(toast => (
-          <Toast key={toast.id} id={toast.id} type={toast.type} title={toast.title} message={toast.message} onClose={removeToast} duration={3000} />
+          <Toast
+            key={toast.id}
+            id={toast.id}
+            type={toast.type}
+            title={toast.title}
+            message={toast.message}
+            onClose={removeToast}
+            duration={3000}
+          />
         ))}
       </div>
 
@@ -126,10 +134,11 @@ const cancelarReserva = async (id) => {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "60px" }}>Carregando...</div>
+        <div className="loading-state">Carregando...</div>
       ) : (
         <div className="solicitacoes-container">
-          
+
+          {/* SEÇÃO: SOLICITAÇÕES EM ANÁLISE */}
           <div className="solicitacao-card">
             <div className="card-header analise-header">
               <h2>Solicitações em análise</h2>
@@ -140,44 +149,44 @@ const cancelarReserva = async (id) => {
                 <p className="empty-message">Nenhuma solicitação em análise</p>
               ) : (
                 reservasEmAnalise.map(reserva => (
-<div key={reserva.id} className="solicitacao-item">
-  <div className="solicitacao-info">
-    <div className="solicitacao-titulo">
-      <strong>{reserva.sala}</strong>
-    </div>
-    <div className="solicitacao-detalhes">
-      {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
-    </div>
-    <div className="solicitacao-status">
-      <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
-        {getStatusTexto(reserva.status, reserva.data)}
-      </span>
-    </div>
-  </div>
-  
-  <div className="solicitacao-right">
-    <div className="solicitacao-acoes">
-      <button className="btn-editar" onClick={() => editarReserva(reserva)} title="Editar">
-        <AiOutlineEdit size={20} />
-      </button>
-      <button className="btn-excluir" onClick={() => cancelarReserva(reserva.id)} title="Cancelar">
-        <AiOutlineDelete size={20} />
-      </button>
-    </div>
-    
-    {/* ABERTO POR - ABAIXO DOS BOTÕES */}
-    {reserva.usuarioNome && (
-      <div className="solicitacao-aberto-por">
-        Aberto por: {reserva.usuarioEmail}
-      </div>
-    )}
-  </div>
-</div>
+                  <div key={reserva.id} className="solicitacao-item">
+                    <div className="solicitacao-info">
+                      <div className="solicitacao-titulo">
+                        <strong>{reserva.sala}</strong>
+                      </div>
+                      <div className="solicitacao-detalhes">
+                        {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
+                      </div>
+                      <div className="solicitacao-status">
+                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
+                          {getStatusTexto(reserva.status, reserva.data)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="solicitacao-right">
+                      <div className="solicitacao-acoes">
+                        <button className="btn-editar" onClick={() => editarReserva(reserva)} title="Editar">
+                          <AiOutlineEdit size={20} />
+                        </button>
+                        <button className="btn-excluir" onClick={() => cancelarReserva(reserva.id)} title="Cancelar">
+                          <AiOutlineDelete size={20} />
+                        </button>
+                      </div>
+
+                      {reserva.usuarioNome && (
+                        <div className="solicitacao-aberto-por">
+                          Aberto por: {reserva.usuarioEmail}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))
               )}
             </div>
           </div>
 
+          {/* SEÇÃO: RESERVAS APROVADAS */}
           <div className="solicitacao-card">
             <div className="card-header aprovada-header">
               <h2>Reservas aprovadas</h2>
@@ -216,6 +225,7 @@ const cancelarReserva = async (id) => {
             </div>
           </div>
 
+          {/* SEÇÃO: RESERVAS FINALIZADAS */}
           <div className="solicitacao-card">
             <div className="card-header finalizada-header">
               <h2>Reservas finalizadas</h2>
@@ -234,11 +244,22 @@ const cancelarReserva = async (id) => {
                       <div className="solicitacao-detalhes">
                         {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
                       </div>
-                      <div className="solicitacao-status">
+                    <div className="solicitacao-status">
+                      <div className="status-wrapper">
                         <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
                           {getStatusTexto(reserva.status, reserva.data)}
                         </span>
+
+                        {/* MOTIVO DA REJEIÇÃO - aparece ao lado do status */}
+                        {reserva.status === 'REJEITADO' && reserva.motivoRejeicao && (
+                          <div className="motivo-rejeicao">
+                            <strong>Motivo:</strong> {reserva.motivoRejeicao}
+                          </div>
+                        )}
                       </div>
+                    </div>
+
+
                     </div>
                   </div>
                 ))
