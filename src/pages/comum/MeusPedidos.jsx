@@ -1,4 +1,3 @@
-// src/pages/comum/MeusPedidos.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -10,6 +9,18 @@ const formatarData = (dataISO) => {
   if (!dataISO) return "";
   const [ano, mes, dia] = dataISO.split("-");
   return `${dia}/${mes}/${ano}`;
+};
+
+const formatarHorario = (hora) => {
+  if (!hora) return "";
+  return hora.slice(0, 5);
+};
+
+// Converte "2026-05-30" + "21:00" para um objeto Date real
+const toDateTime = (dataISO, horaStr) => {
+  if (!dataISO || !horaStr) return null;
+  const hora = horaStr.slice(0, 5); // garante "HH:mm" sem segundos
+  return new Date(`${dataISO}T${hora}:00`);
 };
 
 export default function MeusPedidos() {
@@ -26,6 +37,11 @@ export default function MeusPedidos() {
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
+
+const [showEditConfirmation, setShowEditConfirmation] = useState(false);
+const [reservaSelecionada, setReservaSelecionada] = useState(null);
+const [showCancelConfirmation, setShowCancelConfirmation] = useState(null);
+
 
   const carregarReservas = async () => {
     try {
@@ -44,74 +60,81 @@ export default function MeusPedidos() {
     carregarReservas();
   }, []);
 
-  const getStatusCategoria = (status, data) => {
-    const hoje = new Date();
-    const dataReserva = new Date(data + 'T23:59:59');
-    hoje.setHours(0, 0, 0, 0);
+  // Verifica se o horário de FIM da reserva já passou em relação ao momento atual
+  const reservaExpirou = (data, horaFim) => {
+    const fimReserva = toDateTime(data, horaFim);
+    if (!fimReserva) return false;
+    return new Date() > fimReserva;
+  };
 
+  const getStatusCategoria = (status, data, horaFim) => {
+    // Cancelado e rejeitado sempre vão para finalizadas, independente da data
     if (status === 'CANCELADO') return 'finalizada';
     if (status === 'REJEITADO') return 'finalizada';
-    if (dataReserva < hoje) return 'finalizada';
+
+    // Se o horário de fim já passou, é finalizada independente do status
+    if (reservaExpirou(data, horaFim)) return 'finalizada';
+
+    // Horário ainda não passou: classifica pelo status
     if (status === 'APROVADO') return 'aprovada';
     return 'analise';
   };
 
-  const getStatusTexto = (status, data) => {
-    const hoje = new Date();
-    const dataReserva = new Date(data + 'T23:59:59');
-    hoje.setHours(0, 0, 0, 0);
-
+  const getStatusTexto = (status, data, horaFim) => {
     if (status === 'CANCELADO') return 'Cancelada';
     if (status === 'REJEITADO') return 'Negada';
-    if (dataReserva < hoje) return 'Concluída';
+    if (reservaExpirou(data, horaFim)) return 'Finalizada';
     if (status === 'APROVADO') return 'Aprovada';
     return 'Em aprovação';
   };
 
-  const getStatusClass = (status, data) => {
-    const hoje = new Date();
-    const dataReserva = new Date(data + 'T23:59:59');
-    hoje.setHours(0, 0, 0, 0);
-
+  const getStatusClass = (status, data, horaFim) => {
     if (status === 'CANCELADO') return 'status-cancelada';
     if (status === 'REJEITADO') return 'status-negada';
-    if (dataReserva < hoje) return 'status-concluida';
+    if (reservaExpirou(data, horaFim)) return 'status-finalizada';
     if (status === 'APROVADO') return 'status-aprovada';
     return 'status-analise';
   };
 
-  const cancelarReserva = async (id) => {
-    if (!window.confirm("Tem certeza que deseja cancelar esta reserva?")) return;
-    try {
-      await api.put(`/reservas/${id}/cancelar`);
-      addToast('success', 'Reserva cancelada com sucesso!');
-      carregarReservas();
-    } catch (error) {
-      addToast('error', 'Erro ao cancelar reserva');
-    }
-  };
+const cancelarReserva = (reserva) => {
+  setReservaSelecionada(reserva);
+  setShowCancelConfirmation(true);
+  }
 
-  const editarReserva = (reserva) => {
-    if (reserva.status === 'APROVADO') {
-      if (!window.confirm(
-        "ATENÇÃO!\n\n" +
-        "Esta reserva já foi APROVADA pelo gestor.\n\n" +
-        "Ao editar, ela voltará para ANÁLISE e precisará ser aprovada novamente.\n\n" +
-        "Deseja continuar?"
-      )) return;
-    }
+  const confirmarCancelamento = async () => {
+  try {
+    await api.put(`/reservas/${reservaSelecionada.id}/cancelar`);
+    addToast('success', 'Reserva cancelada com sucesso!');
+    carregarReservas();
+  } catch (error) {
+    addToast('error', 'Erro ao cancelar reserva');
+  } finally {
+    setShowCancelConfirmation(false);
+    setReservaSelecionada(null);
+  }
+};
 
+
+const editarReserva = (reserva) => {
+  if (reserva.status === 'APROVADO') {
+    setReservaSelecionada(reserva);
+    setShowEditConfirmation(true);
+  } else {
     navigate("/solicitar-reserva", {
-      state: {
-        editando: true,
-        reservaData: reserva
-      }
+      state: { editando: true, reservaData: reserva }
     });
-  };
+  }
+};
 
-  const reservasEmAnalise = reservas.filter(r => getStatusCategoria(r.status, r.data) === 'analise');
-  const reservasAprovadas = reservas.filter(r => getStatusCategoria(r.status, r.data) === 'aprovada');
-  const reservasFinalizadas = reservas.filter(r => getStatusCategoria(r.status, r.data) === 'finalizada');
+  const reservasEmAnalise = reservas.filter(r =>
+    getStatusCategoria(r.status, r.data, r.horaFim) === 'analise'
+  );
+  const reservasAprovadas = reservas.filter(r =>
+    getStatusCategoria(r.status, r.data, r.horaFim) === 'aprovada'
+  );
+  const reservasFinalizadas = reservas.filter(r =>
+    getStatusCategoria(r.status, r.data, r.horaFim) === 'finalizada'
+  );
 
   return (
     <>
@@ -128,6 +151,68 @@ export default function MeusPedidos() {
           />
         ))}
       </div>
+
+      {showEditConfirmation && (
+      <div className="modal-overlay" onClick={() => setShowEditConfirmation(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="30" fill="#f59e0b" stroke="#d97706" strokeWidth="2"/>
+              <path d="M32 18v16M32 42v2" stroke="white" strokeWidth="4" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h3 className="modal-title">ATENÇÃO!</h3>
+          <p className="modal-message">
+            Esta reserva já foi APROVADA pelo gestor. Ao editar, ela voltará 
+            para ANÁLISE e precisará ser aprovada novamente.
+          </p>
+          <div className="modal-buttons">
+            <button className="modal-btn modal-btn-primary" onClick={() => {
+              setShowEditConfirmation(false);
+              navigate("/solicitar-reserva", {
+                state: { editando: true, reservaData: reservaSelecionada }
+              });
+            }}>
+              Continuar
+            </button>
+            <button className="modal-btn modal-btn-secondary" onClick={() => {
+              setShowEditConfirmation(false);
+              setReservaSelecionada(null);
+            }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {showCancelConfirmation && (
+  <div className="modal-overlay" onClick={() => setShowCancelConfirmation(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="30" fill="#ef4444" stroke="#dc2626" strokeWidth="2"/>
+          <path d="M24 24L40 40M40 24L24 40" stroke="white" strokeWidth="4" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <h3 className="modal-title">Cancelar Reserva</h3>
+      <p className="modal-message">
+        Tem certeza que deseja cancelar esta reserva? Ela será movida para finalizadas.
+      </p>
+      <div className="modal-buttons">
+        <button className="modal-btn modal-btn-primary" onClick={confirmarCancelamento}>
+          Sim, cancelar
+        </button>
+        <button className="modal-btn modal-btn-secondary" onClick={() => {
+          setShowCancelConfirmation(false);
+          setReservaSelecionada(null);
+        }}>
+          Voltar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <div className="page-title-container">
         <h1 className="page-title">Minhas Solicitações</h1>
@@ -155,30 +240,23 @@ export default function MeusPedidos() {
                         <strong>{reserva.sala}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
-                        {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
+                        {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
                       </div>
                       <div className="solicitacao-status">
-                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
-                          {getStatusTexto(reserva.status, reserva.data)}
+                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data, reserva.horaFim)}`}>
+                          {getStatusTexto(reserva.status, reserva.data, reserva.horaFim)}
                         </span>
                       </div>
                     </div>
-
                     <div className="solicitacao-right">
                       <div className="solicitacao-acoes">
                         <button className="btn-editar" onClick={() => editarReserva(reserva)} title="Editar">
                           <AiOutlineEdit size={20} />
                         </button>
-                        <button className="btn-excluir" onClick={() => cancelarReserva(reserva.id)} title="Cancelar">
+                        <button className="btn-excluir" onClick={() => cancelarReserva(reserva)} title="Cancelar">
                           <AiOutlineDelete size={20} />
                         </button>
                       </div>
-
-                      {reserva.usuarioNome && (
-                        <div className="solicitacao-aberto-por">
-                          Aberto por: {reserva.usuarioEmail}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))
@@ -203,11 +281,11 @@ export default function MeusPedidos() {
                         <strong>{reserva.sala}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
-                        {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
+                        {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
                       </div>
                       <div className="solicitacao-status">
-                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
-                          {getStatusTexto(reserva.status, reserva.data)}
+                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data, reserva.horaFim)}`}>
+                          {getStatusTexto(reserva.status, reserva.data, reserva.horaFim)}
                         </span>
                       </div>
                     </div>
@@ -242,30 +320,27 @@ export default function MeusPedidos() {
                         <strong>{reserva.sala}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
-                        {formatarData(reserva.data)} | {reserva.horaInicio} – {reserva.horaFim}
+                        {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
                       </div>
-                    <div className="solicitacao-status">
-                      <div className="status-wrapper">
-                        <span className={`status-badge ${getStatusClass(reserva.status, reserva.data)}`}>
-                          {getStatusTexto(reserva.status, reserva.data)}
-                        </span>
-
-                        {/* MOTIVO DA REJEIÇÃO - aparece ao lado do status */}
-                        {reserva.status === 'REJEITADO' && reserva.motivoRejeicao && (
-                          <div className="motivo-rejeicao">
-                            <strong>Motivo:</strong> {reserva.motivoRejeicao}
-                          </div>
-                        )}
+                      <div className="solicitacao-status">
+                        <div className="status-wrapper">
+                          <span className={`status-badge ${getStatusClass(reserva.status, reserva.data, reserva.horaFim)}`}>
+                            {getStatusTexto(reserva.status, reserva.data, reserva.horaFim)}
+                          </span>
+                          {reserva.status === 'REJEITADO' && reserva.motivoRejeicao && (
+                            <div className="motivo-rejeicao">
+                              <strong>Motivo:</strong> {reserva.motivoRejeicao}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-
-
                     </div>
                   </div>
                 ))
               )}
             </div>
           </div>
+
         </div>
       )}
     </>

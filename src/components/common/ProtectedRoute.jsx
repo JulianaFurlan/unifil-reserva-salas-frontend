@@ -15,6 +15,7 @@ export default function ProtectedRoute({ children, roles = [] }) {
   if (roles.length > 0 && !roles.includes(user.tipo)) {
     if (user.tipo === 'COMUM') return <Navigate to="/solicitar-reserva" replace />;
     if (user.tipo === 'GESTOR') return <Navigate to="/gestor/solicitacoes" replace />;
+    if (user.tipo === 'ADMIN') return <Navigate to="/admin/usuarios" replace />;
     return <Navigate to="/login" replace />;
   }
 
