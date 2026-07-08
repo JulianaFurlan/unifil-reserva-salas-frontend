@@ -16,14 +16,14 @@ const formatarHorario = (hora) => {
   return hora.slice(0, 5);
 };
 
-// Converte "2026-05-30" + "21:00" para um objeto Date real
 const toDateTime = (dataISO, horaStr) => {
   if (!dataISO || !horaStr) return null;
-  const hora = horaStr.slice(0, 5); // garante "HH:mm" sem segundos
+  const hora = horaStr.slice(0, 5);
   return new Date(`${dataISO}T${hora}:00`);
 };
 
 export default function MeusPedidos() {
+  const [limitarFinalizadas, setLimitarFinalizadas] = useState(7);
   const navigate = useNavigate();
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,12 @@ const [showCancelConfirmation, setShowCancelConfirmation] = useState(null);
   const getStatusTexto = (status, data, horaFim) => {
     if (status === 'CANCELADO') return 'Cancelada';
     if (status === 'REJEITADO') return 'Negada';
-    if (reservaExpirou(data, horaFim)) return 'Finalizada';
+
+    if (reservaExpirou(data, horaFim)) {
+      if (status === 'PENDENTE') return 'Expirada';
+      if (status === 'APROVADO') return 'Concluída';
+    }
+
     if (status === 'APROVADO') return 'Aprovada';
     return 'Em aprovação';
   };
@@ -91,7 +96,12 @@ const [showCancelConfirmation, setShowCancelConfirmation] = useState(null);
   const getStatusClass = (status, data, horaFim) => {
     if (status === 'CANCELADO') return 'status-cancelada';
     if (status === 'REJEITADO') return 'status-negada';
-    if (reservaExpirou(data, horaFim)) return 'status-finalizada';
+
+    if (reservaExpirou(data, horaFim)) {
+      if (status === 'PENDENTE') return 'status-expirada';
+      return 'status-concluida';
+    }
+
     if (status === 'APROVADO') return 'status-aprovada';
     return 'status-analise';
   };
@@ -132,9 +142,12 @@ const editarReserva = (reserva) => {
   const reservasAprovadas = reservas.filter(r =>
     getStatusCategoria(r.status, r.data, r.horaFim) === 'aprovada'
   );
-  const reservasFinalizadas = reservas.filter(r =>
-    getStatusCategoria(r.status, r.data, r.horaFim) === 'finalizada'
-  );
+  const reservasFinalizadas = reservas
+  .filter(r => getStatusCategoria(r.status, r.data, r.horaFim) === 'finalizada')
+  .sort((a, b) => new Date(b.data) - new Date(a.data));
+
+const finalizadasVisiveis = reservasFinalizadas.slice(0, limitarFinalizadas);
+const temMais = reservasFinalizadas.length > limitarFinalizadas;
 
   return (
     <>
@@ -304,16 +317,17 @@ const editarReserva = (reserva) => {
           </div>
 
           {/* SEÇÃO: RESERVAS FINALIZADAS */}
-          <div className="solicitacao-card">
-            <div className="card-header finalizada-header">
-              <h2>Reservas finalizadas</h2>
-              <span className="card-count">{reservasFinalizadas.length}</span>
-            </div>
-            <div className="card-body">
-              {reservasFinalizadas.length === 0 ? (
-                <p className="empty-message">Nenhuma reserva finalizada</p>
-              ) : (
-                reservasFinalizadas.map(reserva => (
+        <div className="solicitacao-card">
+          <div className="card-header finalizada-header">
+            <h2>Reservas finalizadas</h2>
+            <span className="card-count">{reservasFinalizadas.length}</span>
+          </div>
+          <div className="card-body">
+            {reservasFinalizadas.length === 0 ? (
+              <p className="empty-message">Nenhuma reserva finalizada</p>
+            ) : (
+              <>
+                {finalizadasVisiveis.map(reserva => (
                   <div key={reserva.id} className="solicitacao-item finalizado">
                     <div className="solicitacao-info">
                       <div className="solicitacao-titulo">
@@ -336,11 +350,21 @@ const editarReserva = (reserva) => {
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+                <div className="BtnMostrarMaisContainer">
+                {temMais && (
+                  <button
+                    onClick={() => setLimitarFinalizadas(prev => prev + 7)}
+                    className="btn-mostrar-mais"
+                  >
+                    Mostrar mais ({reservasFinalizadas.length - limitarFinalizadas} restantes)
+                  </button>
+                )}
+                </div>
+              </>
+            )}
           </div>
-
+        </div>
         </div>
       )}
     </>
