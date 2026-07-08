@@ -18,6 +18,32 @@ const SALAS_POR_BLOCO = {
   ]
 };
 
+const DEPARTAMENTOS = [
+  { value: "CC", label: "Ciência da Computação" },
+  { value: "ADM", label: "Administração" },
+  { value: "DIREITO", label: "Direito" },
+  { value: "PSICOLOGIA", label: "Psicologia" },
+  { value: "CONTABIL", label: "Ciências Contábeis" },
+  { value: "ENFERMAGEM", label: "Enfermagem" },
+  { value: "FISIOTERAPIA", label: "Fisioterapia" },
+  { value: "NUTRICAO", label: "Nutrição" },
+  { value: "ED_FISICA", label: "Educação Física" },
+  { value: "ARQUITETURA", label: "Arquitetura e Urbanismo" },
+  { value: "ENGENHARIA", label: "Engenharia Civil" },
+];
+
+const FINALIDADES = [
+  { value: "aula_reposicao", label: "Aula de reposição" },
+  { value: "aula_pratica", label: "Aula prática / laboratório" },
+  { value: "reuniao_pedagogica", label: "Reunião pedagógica" },
+  { value: "orientacao_tcc", label: "Orientação de TCC" },
+  { value: "banca", label: "Banca / avaliação" },
+  { value: "palestra", label: "Palestra / evento" },
+  { value: "treinamento", label: "Treinamento / capacitação" },
+  { value: "evento", label: "Evento externo" },
+  { value: "outro", label: "Outro" },
+];
+
 const INITIAL_FORM_STATE = {
   data: "",
   horaInicio: "",
@@ -41,18 +67,19 @@ const CHAVE_RASCUNHO = "rascunho-reserva";
 
 export default function SolicitarReserva() {
   const { user } = useAuth();
+  const CHAVE_RASCUNHO = `rascunho-reserva-${user?.id ?? 'anonimo'}`;
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Carrega rascunho salvo no sessionStorage ao iniciar
   const [form, setForm] = useState(() => {
     try {
-      const salvo = sessionStorage.getItem(CHAVE_RASCUNHO);
+      const chave = `rascunho-reserva-${user?.id ?? 'anonimo'}`;
+      const salvo = sessionStorage.getItem(chave);
       return salvo ? JSON.parse(salvo) : INITIAL_FORM_STATE;
     } catch {
       return INITIAL_FORM_STATE;
     }
-  });
+  }); 
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -96,13 +123,9 @@ export default function SolicitarReserva() {
   };
 
   const getFinalidadeTexto = (finalidade, finalidadeOutro) => {
-    const map = {
-      reuniao: "Reunião de equipe",
-      aula: "Aula / Treinamento",
-      evento: "Evento externo",
-      outro: finalidadeOutro
-    };
-    return map[finalidade] || finalidade;
+    if (finalidade === "outro") return finalidadeOutro;
+    const encontrada = FINALIDADES.find(f => f.value === finalidade);
+    return encontrada ? encontrada.label : finalidade;
   };
 
   const carregarReservas = async () => {
@@ -136,6 +159,13 @@ export default function SolicitarReserva() {
     return resultado;
   }, [form.data, form.horaInicio, form.horaFim, reservas, editingId, isEditing]);
 
+    useEffect(() => {
+    if (form.sala) {
+      setErrors(prev => ({ ...prev, sala: undefined }));
+    }
+  }, [form.sala]);
+
+  //Caso o usuario coloque uma sala e depois muda o dia para uma aprovada
   useEffect(() => {
     if (form.sala && salasAprovadas[form.sala]) {
       setForm(prev => ({ ...prev, sala: "" }));
@@ -179,10 +209,8 @@ export default function SolicitarReserva() {
         email: reserva.email,
         telefone: reserva.telefone || "",
         departamento: reserva.departamento || "",
-        finalidade: reserva.finalidade === "Reunião de equipe" ? "reuniao" :
-                    reserva.finalidade === "Aula / Treinamento" ? "aula" :
-                    reserva.finalidade === "Evento externo" ? "evento" : "outro",
-        finalidadeOutro: reserva.finalidade,
+        finalidade : reserva.finalidade || "",
+        finalidadeOutro: reserva.finalidade === "outro" ? reserva.finalidadeOutro || "" : "",
         observacoes: reserva.observacoes || "",
       });
 
@@ -190,39 +218,59 @@ export default function SolicitarReserva() {
     }
   }, [location, navigate]);
 
+  //Só libera a seleção de bloco e sala se data, horaInicio e horaFim forem válidos
   const localizacaoLiberada = useMemo(() => {
     if (!form.data || !form.horaInicio || !form.horaFim) return false;
+    
     const [hI, mI] = form.horaInicio.split(":").map(Number);
     const [hF, mF] = form.horaFim.split(":").map(Number);
-    return (hF * 60 + mF) > (hI * 60 + mI);
+    const minutosInicio = hI * 60 + mI;
+    const minutosFim = hF * 60 + mF;
+    
+    if (minutosFim <= minutosInicio) return false;
+    
+    return true;
   }, [form.data, form.horaInicio, form.horaFim]);
 
   const getFieldError = (fieldName) => {
     if (fieldName === "data") {
       if (!form.data) return "Data é obrigatória";
-      if (form.data < today) return "Não é possível reservar em datas passadas";
-      if (form.data > maxDateString) return "Não é possível reservar com mais de 1 ano de antecedência";
+      if (form.data.length < 10) return null;
+      
+      const dataInformada = new Date(form.data + "T00:00:00");
+      const dataHoje = new Date(today + "T00:00:00");
+      const dataMaxima = new Date(maxDateString + "T00:00:00");
+
+      if (dataInformada < dataHoje) return "Não é possível reservar em datas passadas";
+      if (dataInformada > dataMaxima) return "Não é possível reservar com mais de 1 ano de antecedência";
       return null;
     }
     if (fieldName === "horaInicio") {
       if (!form.horaInicio) return "Horário de início é obrigatório";
+
       if (form.data === today) {
         const agora = new Date();
         const [hInicio, mInicio] = form.horaInicio.split(":").map(Number);
         const minutosInicio = hInicio * 60 + mInicio;
         const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
         if (minutosInicio < minutosAgora) return "Este horário já passou para hoje";
+
+        if (minutosInicio - minutosAgora < 10) return "O horário de início deve ser pelo menos 10 minutos a partir de agora";
       }
       return null;
     }
     if (fieldName === "horaFim") {
       if (!form.horaFim) return "Horário final é obrigatório";
+
       if (form.horaInicio && form.horaFim) {
         const [hInicio, mInicio] = form.horaInicio.split(":").map(Number);
         const [hFim, mFim] = form.horaFim.split(":").map(Number);
         const minutosInicio = hInicio * 60 + mInicio;
         const minutosFim = hFim * 60 + mFim;
-        if (minutosFim <= minutosInicio) return "Horário de fim deve ser após o início";
+
+        if (minutosFim <= minutosInicio) 
+          return "Horário de fim deve ser após o início";
       }
       return null;
     }
@@ -268,19 +316,56 @@ export default function SolicitarReserva() {
     setErrors(prev => error ? { ...prev, [name]: error } : { ...prev, [name]: undefined });
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "telefone") {
-      setForm(prev => ({ ...prev, telefone: applyTelefoneMask(value) }));
-      return;
-    }
-    setForm(prev => ({ ...prev, [name]: value }));
-    if (touched[name]) {
-      const error = getFieldError(name);
-      setErrors(prev => error ? { ...prev, [name]: error } : { ...prev, [name]: undefined });
-    }
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
 
+  if (name === "telefone") {
+    setForm(prev => ({ ...prev, telefone: applyTelefoneMask(value) }));
+    return;
+  }
+
+  if (name === "sala" && value) {
+    setErrors(prev => ({ ...prev, sala: undefined }));
+  }
+
+  // Atualiza o form primeiro
+  setForm(prev => {
+    const novoForm = { ...prev, [name]: value };
+
+    // Revalida horaFim quando horaInicio muda e vice-versa
+    if (name === "horaInicio" || name === "horaFim") {
+      const inicio = name === "horaInicio" ? value : prev.horaInicio;
+      const fim = name === "horaFim" ? value : prev.horaFim;
+
+      if (inicio && fim) {
+        const [hI, mI] = inicio.split(":").map(Number);
+        const [hF, mF] = fim.split(":").map(Number);
+        const minutosInicio = hI * 60 + mI;
+        const minutosFim = hF * 60 + mF;
+
+        if (minutosFim <= minutosInicio) {
+          setTimeout(() => {
+            setErrors(prev => ({
+              ...prev,
+              horaFim: "Horário de fim deve ser após o início"
+            }));
+          }, 0);
+        } else {
+          setTimeout(() => {
+            setErrors(prev => ({ ...prev, horaFim: undefined }));
+          }, 0);
+        }
+      }
+    }
+
+    return novoForm;
+  });
+
+  if (touched[name]) {
+    const error = getFieldError(name);
+    setErrors(prev => error ? { ...prev, [name]: error } : { ...prev, [name]: undefined });
+  }
+};
   const handleLimparFormulario = () => {
     setForm(INITIAL_FORM_STATE);
     setErrors({});
@@ -306,6 +391,14 @@ export default function SolicitarReserva() {
       const error = getFieldError(field);
       if (error) newErrors[field] = error;
     });
+
+    if (form.horaInicio && form.horaFim) {
+  const [hI, mI] = form.horaInicio.split(":").map(Number);
+  const [hF, mF] = form.horaFim.split(":").map(Number);
+  if ((hF * 60 + mF) <= (hI * 60 + mI)) {
+    newErrors.horaFim = "Horário de fim deve ser após o início";
+  }
+}
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -409,7 +502,7 @@ export default function SolicitarReserva() {
 
           <div className="form-group">
             <label>Data <span className="required">*</span></label>
-            <input type="date" name="data" value={form.data} onChange={handleChange} onBlur={handleBlur} min={today} />
+            <input type="date" name="data" value={form.data} onChange={handleChange} onBlur={handleBlur} min={today} max={maxDateString} />
             {errors.data && <p className="error-message">{errors.data}</p>}
           </div>
 
@@ -424,60 +517,64 @@ export default function SolicitarReserva() {
             {errors.horaFim && <p className="error-message">{errors.horaFim}</p>}
           </div>
 
-          <div className="form-group">
-            <label>
-              Localização <span className="required">*</span>
-              {!localizacaoLiberada && (
-                <span className="campo-hint"> — preencha data e horário primeiro</span>
-              )}
-            </label>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <select
-                name="bloco"
-                value={form.bloco}
-                disabled={!localizacaoLiberada}
-                onChange={(e) => {
-                  setForm(prev => ({ ...prev, bloco: e.target.value, sala: "" }));
-                }}
-                style={{ flex: 1 }}
-              >
-                <option value="">Bloco</option>
-                {Object.keys(SALAS_POR_BLOCO).map(bloco => (
-                  <option key={bloco} value={bloco}>{bloco}</option>
-                ))}
-              </select>
+<div className="form-group">
+  <label>
+    Localização <span className="required">*</span>
+  </label>
 
-              <select
-                name="sala"
-                value={form.sala}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                disabled={!localizacaoLiberada || !form.bloco}
-                style={{ flex: 2 }}
-              >
-                <option value="">
-                  {!localizacaoLiberada ? "Sala" : form.bloco ? "Selecione a sala..." : "Sala"}
-                </option>
-                {(SALAS_POR_BLOCO[form.bloco] || []).map(sala => {
-                  const bloqueio = salasAprovadas[sala];
-                  return (
-                    <option key={sala} value={sala} disabled={!!bloqueio}>
-                      {bloqueio ? `${sala} — ${bloqueio}` : sala}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+  <div style={{ display: "flex", gap: "8px" }}>
+    <select
+      name="bloco"
+      value={form.bloco}
+      disabled={!localizacaoLiberada}
+      onChange={(e) => {
+        setForm(prev => ({ ...prev, bloco: e.target.value, sala: "" }));
+      }}
+      style={{ flex: 1 }}
+    >
+      <option value="">
+        {!localizacaoLiberada ? "Aguarde..." : "Bloco"}
+      </option>
+      {Object.keys(SALAS_POR_BLOCO).map(bloco => (
+        <option key={bloco} value={bloco}>{bloco}</option>
+      ))}
+    </select>
 
-            {form.bloco && localizacaoLiberada &&
-              Object.keys(salasAprovadas).some(s => SALAS_POR_BLOCO[form.bloco]?.includes(s)) && (
-              <p className="info-message">
-                Algumas salas estão reservadas nesse horário e não podem ser selecionadas.
-              </p>
-            )}
+    <select
+      name="sala"
+      value={form.sala}
+      onChange={handleChange}
+      disabled={!localizacaoLiberada || !form.bloco}
+      style={{ flex: 2 }}
+    >
+      <option value="">
+        {!localizacaoLiberada ? "Aguarde..." : form.bloco ? "Selecione a sala..." : "Sala"}
+      </option>
+      {(SALAS_POR_BLOCO[form.bloco] || []).map(sala => {
+        const bloqueio = salasAprovadas[sala];
+        return (
+          <option key={sala} value={sala} disabled={!!bloqueio}>
+            {bloqueio ? `${sala} — ${bloqueio}` : sala}
+          </option>
+        );
+      })}
+    </select>
+  </div>
 
-            {errors.sala && <p className="error-message">{errors.sala}</p>}
-          </div>
+  {/* Hint embaixo dos selects, não dentro do label */}
+  {!localizacaoLiberada && (
+    <p className="campo-hint">Preencha data e horário válidos primeiro</p>
+  )}
+
+  {form.bloco && localizacaoLiberada &&
+    Object.keys(salasAprovadas).some(s => SALAS_POR_BLOCO[form.bloco]?.includes(s)) && (
+    <p className="info-message">
+      Algumas salas estão reservadas nesse horário e não podem ser selecionadas.
+    </p>
+  )}
+
+  {errors.sala && <p className="error-message">{errors.sala}</p>}
+</div>
         </div>
 
         <h2 className="section-title">Informações da Reserva</h2>
@@ -501,34 +598,34 @@ export default function SolicitarReserva() {
         </div>
 
         <div className="form-row two-columns">
-          <div className="form-group">
-            <label>Departamento <span className="required">*</span></label>
-            <select name="departamento" value={form.departamento} onChange={handleChange} onBlur={handleBlur}>
-              <option value="">Selecione...</option>
-              <option value="TI">Tecnologia da Informação</option>
-              <option value="ADM">Administração</option>
-              <option value="RH">Recursos Humanos</option>
-            </select>
-            {errors.departamento && <p className="error-message">{errors.departamento}</p>}
-          </div>
-          <div className="form-group">
-            <label>Finalidade <span className="required">*</span></label>
-            <select name="finalidade" value={form.finalidade} onChange={handleChange} onBlur={handleBlur}>
-              <option value="">Selecione...</option>
-              <option value="reuniao">Reunião de equipe</option>
-              <option value="aula">Aula / Treinamento</option>
-              <option value="evento">Evento externo</option>
-              <option value="outro">Outro</option>
-            </select>
-            {errors.finalidade && <p className="error-message">{errors.finalidade}</p>}
-            {form.finalidade === "outro" && (
-              <>
-                <label>Especifique:</label>
-                <input type="text" name="finalidadeOutro" value={form.finalidadeOutro} onChange={handleChange} onBlur={handleBlur} placeholder="Descreva..." />
-                {errors.finalidadeOutro && <p className="error-message">{errors.finalidadeOutro}</p>}
-              </>
-            )}
-          </div>
+        <div className="form-group">
+          <label>Departamento <span className="required">*</span></label>
+          <select name="departamento" value={form.departamento} onChange={handleChange} onBlur={handleBlur}>
+            <option value="">Selecione...</option>
+            {DEPARTAMENTOS.map(d => (
+              <option key={d.value} value={d.value}>{d.label}</option>
+            ))}
+          </select>
+          {errors.departamento && <p className="error-message">{errors.departamento}</p>}
+        </div>
+
+        <div className="form-group">
+          <label>Finalidade <span className="required">*</span></label>
+          <select name="finalidade" value={form.finalidade} onChange={handleChange} onBlur={handleBlur}>
+            <option value="">Selecione...</option>
+            {FINALIDADES.map(f => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
+          </select>
+          {errors.finalidade && <p className="error-message">{errors.finalidade}</p>}
+          {form.finalidade === "outro" && (
+            <>
+              <label>Especifique:</label>
+              <input type="text" name="finalidadeOutro" value={form.finalidadeOutro} onChange={handleChange} onBlur={handleBlur} placeholder="Descreva..." />
+              {errors.finalidadeOutro && <p className="error-message">{errors.finalidadeOutro}</p>}
+            </>
+          )}
+        </div>
         </div>
 
         <div className="form-group">
