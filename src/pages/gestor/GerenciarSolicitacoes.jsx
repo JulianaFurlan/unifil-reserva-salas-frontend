@@ -62,7 +62,7 @@ export default function GerenciarSolicitacoes() {
 
     if (filtroSala) {
       filtradas = filtradas.filter(r =>
-        r.sala?.toLowerCase().includes(filtroSala.toLowerCase())
+        r.sala?.nome.toLowerCase().includes(filtroSala.toLowerCase())
       );
     }
 
@@ -154,7 +154,7 @@ export default function GerenciarSolicitacoes() {
     setFiltroTexto("");
   };
 
-  const salasUnicas = [...new Set(reservas.map(r => r.sala).filter(Boolean))];
+  const salasUnicas = [...new Set(reservas.map(r => r.sala?.nome).filter(Boolean))];
 
   return (
     <>
@@ -301,7 +301,7 @@ export default function GerenciarSolicitacoes() {
                 <div key={reserva.id} className="card-solicitacao">
                   <div className="card-header-gestor">
                     <div className="card-titulo">
-                      <h3>{reserva.sala}</h3>
+                      <h3>{reserva.salaNome || "Sala não encontrada"}</h3>
                       <span className="card-data">{formatarData(reserva.data)}</span>
                     </div>
                     <div className="card-header-right">

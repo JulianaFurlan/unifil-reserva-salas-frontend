@@ -11,7 +11,7 @@ body {
   background-color: #f5f5f5;
 }
 
-/* ==================== LOGIN UNIFIL ==================== */
+/*LOGIN UNIFIL*/
 
 .login-container {
   min-height: 100vh;
@@ -23,7 +23,7 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-/* ---------- TOPO COM LOGO E NOME (igual ao Header) ---------- */
+/*TOPO COM LOGO E NOME*/
 .login-top-bar {
   width: 100%;
   padding: 20px 40px;
@@ -43,7 +43,7 @@ body {
   object-fit: contain;
 }
 
-/* DIVIDER MAIS FINO E MAIS COMPRIDO */
+/* DIVIDER  */
 .divider {
   font-size: 40px;
   color: #AFB1B6;
@@ -59,7 +59,7 @@ body {
   white-space: nowrap;
 }
 
-/* ---------- CONTEÚDO CENTRAL ---------- */
+/* CONTEÚDO CENTRAL */
 .login-content {
   display: flex;
   flex-direction: column;
@@ -71,7 +71,7 @@ body {
   padding: 60px 20px 40px 20px; 
 }
 
-/* ---------- TÍTULO MAIS FINO (SEM NEGRITO) ---------- */
+/* TÍTULO MAIS FINO */
 .login-header {
   text-align: center;
   margin-bottom: 50px;
@@ -79,13 +79,13 @@ body {
 
 .login-title {
   font-size: 3rem;
-  font-weight: 600;  /* ← 400 = normal, sem negrito. Se quiser mais fino usa 300 */
+  font-weight: 600;
   color: #6C6C6C;
   margin: 0;
   letter-spacing: -0.5px;
 }
 
-/* ---------- FORMULÁRIO ---------- */
+/* FORMULÁRIO*/
 .login-form {
   width: 100%;
 }
@@ -129,7 +129,6 @@ body {
   box-shadow: 0 0 0 3px rgba(243, 128, 33, 0.12);
 }
 
-/* ÍCONE À ESQUERDA */
 .input-icon {
   position: absolute;
   left: 16px;
@@ -140,7 +139,7 @@ body {
   z-index: 1;
 }
 
-/* ÍCONE DO OLHO À DIREITA */
+/* ÍCONE DO OLHO*/
 .password-toggle {
   position: absolute;
   right: 16px;
@@ -160,7 +159,7 @@ body {
   color: #f58220;
 }
 
-/* ---------- BOTÃO ---------- */
+/* BOTÃO*/
 .login-btn {
   width: 100%;
   height: 56px;
@@ -186,7 +185,7 @@ body {
   transform: none;
 }
 
-/* ---------- ESQUECI SENHA ---------- */
+/*ESQUECI SENHA*/
 .forgot-password {
   display: block;
   text-align: center;
@@ -203,7 +202,7 @@ body {
   color: #f58220;
 }
 
-/* ---------- ERRO ---------- */
+/* ERRO */
 .login-error {
   margin-bottom: 20px;
   padding: 12px;
@@ -214,18 +213,8 @@ body {
   font-size: 0.9rem;
 }
 
-/* ---------- INFO TESTE ---------- */
-.login-info {
-  margin-top: 20px;
-  padding: 12px;
-  background: #f3f4f6;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: #6b7280;
-}
 
-/* ---------- RESPONSIVIDADE ---------- */
+/*RESPONSIVIDADE */
 @media (max-width: 768px) {
   .logo-image {
     height: 50px;

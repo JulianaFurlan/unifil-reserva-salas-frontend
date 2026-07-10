@@ -4,6 +4,9 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { AiOutlineHome, AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { BsCalendarCheck, BsInboxes } from "react-icons/bs";
+import { FiUserPlus } from "react-icons/fi";
+import { LuSearch } from "react-icons/lu";
+import { TbBuildingCog } from "react-icons/tb";
 import logoUnifil from "../../assets/logo-Unifil.png";
 import "./Layout.css";
 
@@ -50,7 +53,7 @@ export default function Layout() {
               onClick={() => { navigate("/solicitar-reserva"); setMenuAberto(false); }}
               className={`menu-item ${isActive("/solicitar-reserva") ? "active" : ""}`}
             >
-              <AiOutlineHome size={28} />
+              <AiOutlineHome size={30} />
               <span>Solicitar Reserva</span>
             </button>
 
@@ -58,8 +61,16 @@ export default function Layout() {
               onClick={() => { navigate("/meus-pedidos"); setMenuAberto(false); }}
               className={`menu-item ${isActive("/meus-pedidos") ? "active" : ""}`}
             >
-              <BsInboxes size={28} />
+              <BsInboxes size={27} />
               <span>Meus Pedidos</span>
+            </button>
+
+            <button
+              onClick={() => { navigate("/consultar-disponibilidade"); setMenuAberto(false); }}
+              className={`menu-item ${isActive("/consultar-disponibilidade") ? "active" : ""}`}
+            >
+              <LuSearch size={28} />
+              <span>Disponibilidade</span>
             </button>
 
             {(user?.tipo === 'GESTOR' || user?.tipo === 'ADMIN') && (
@@ -67,9 +78,29 @@ export default function Layout() {
                 onClick={() => { navigate("/gestor/solicitacoes"); setMenuAberto(false); }}
                 className={`menu-item ${isActive("/gestor/solicitacoes") ? "active" : ""}`}
               >
-                <BsCalendarCheck size={28} />
+                <BsCalendarCheck size={27} />
                 <span>Gerenciar Reservas</span>
               </button>
+            )}
+
+            {(user?.tipo === 'ADMIN') && (
+            <button 
+              onClick={() => { navigate("/admin/salas"); setMenuAberto(false); }}
+              className={`menu-item ${isActive("/admin/salas") ? "active" : ""}`}
+            >
+              <TbBuildingCog size={29} />
+              <span>Gerenciar Salas</span>
+            </button>
+            )}
+
+            {(user?.tipo === 'ADMIN') && (
+            <button 
+              onClick={() => { navigate("/admin/usuarios"); setMenuAberto(false); }}
+              className={`menu-item ${isActive("/admin/usuarios") ? "active" : ""}`}
+            >
+              <FiUserPlus size={29} />
+              <span>Gerenciar Usuários</span>
+            </button>
             )}
           </nav>
 

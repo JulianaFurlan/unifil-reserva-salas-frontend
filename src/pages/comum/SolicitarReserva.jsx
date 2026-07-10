@@ -7,16 +7,6 @@ import "../styles/reserva.css";
 
 const EMAIL_REGEX = /^[^\s@]+@unifil\.br$/;
 
-const SALAS_POR_BLOCO = {
-  "SEDE": [
-    "Lab 2", "Lab 3", "Lab 4", "Lab 5", "Lab 6",
-    "Lab 7", "Lab 8", "Sala 101", "Sala 109",
-  ],
-  "Ipollon II": [
-    "1027", "1028", "1029", "1030",
-    "1031", "1032", "1033", "1034",
-  ]
-};
 
 const DEPARTAMENTOS = [
   { value: "CC", label: "Ciência da Computação" },
@@ -49,7 +39,7 @@ const INITIAL_FORM_STATE = {
   horaInicio: "",
   horaFim: "",
   bloco: "",
-  sala: "",
+  salaId: "",
   nome: "",
   email: "",
   telefone: "",
@@ -81,6 +71,8 @@ export default function SolicitarReserva() {
     }
   }); 
 
+  const [salas, setSalas] = useState([]);
+  const [carregandoSalas, setCarregandoSalas] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [reservas, setReservas] = useState([]);
@@ -91,6 +83,37 @@ export default function SolicitarReserva() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formPreenchido, setFormPreenchido] = useState(false);
+
+    const salasPorBloco = useMemo(() => {
+    const agrupado = {};
+
+    salas.forEach(sala => {
+      if (!agrupado[sala.bloco]) {
+        agrupado[sala.bloco] = [];
+      }
+      agrupado[sala.bloco].push(sala);
+    });
+    return agrupado;
+  }, [salas]);
+
+  const carregarSalas = async () => {
+    try {
+      setCarregandoSalas(true);;
+      const response = await api.get("/salas");
+      setSalas(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar salas:", error);
+      addToast("error", "Erro ao carregar lista de salas", "Erro");
+    } finally {
+      setCarregandoSalas(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarSalas();
+  }, []);
+
+
 
   // Define data atual e limite máximo (1 ano)
   const now = new Date();
@@ -137,38 +160,38 @@ export default function SolicitarReserva() {
     }
   };
 
+  const salasAprovadas = useMemo(() => {
+  if (!form.data || !form.horaInicio || !form.horaFim) return {};
+  const resultado = {};
+  reservas.forEach(r => {
+    if (r.status !== "APROVADO") return;
+    if (r.data !== form.data) return;
+    if (isEditing && r.id === editingId) return;
+    if (horariosSobrepoem(form.horaInicio, form.horaFim, r.horaInicio, r.horaFim)) {
+      const horaIni = r.horaInicio.slice(0, 5);
+      const horaFimStr = r.horaFim.slice(0, 5);
+      resultado[r.salaId] = `Reservado ${horaIni}–${horaFimStr}`;
+    }
+  });
+  return resultado;
+}, [form.data, form.horaInicio, form.horaFim, reservas, editingId, isEditing]);
+
   useEffect(() => {
     if (!isEditing) {
       sessionStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(form));
     }
   }, [form, isEditing]);
 
-  const salasAprovadas = useMemo(() => {
-    if (!form.data || !form.horaInicio || !form.horaFim) return {};
-    const resultado = {};
-    reservas.forEach(r => {
-      if (r.status !== "APROVADO") return;
-      if (r.data !== form.data) return;
-      if (isEditing && r.id === editingId) return;
-      if (horariosSobrepoem(form.horaInicio, form.horaFim, r.horaInicio, r.horaFim)) {
-        const horaIni = r.horaInicio.slice(0, 5);
-        const horaFimStr = r.horaFim.slice(0, 5);
-        resultado[r.sala] = `Reservado ${horaIni}–${horaFimStr}`;
-      }
-    });
-    return resultado;
-  }, [form.data, form.horaInicio, form.horaFim, reservas, editingId, isEditing]);
-
     useEffect(() => {
-    if (form.sala) {
-      setErrors(prev => ({ ...prev, sala: undefined }));
+    if (form.salaId) {
+      setErrors(prev => ({ ...prev, salaId: undefined }));
     }
-  }, [form.sala]);
+  }, [form.salaId]);
 
   //Caso o usuario coloque uma sala e depois muda o dia para uma aprovada
   useEffect(() => {
-    if (form.sala && salasAprovadas[form.sala]) {
-      setForm(prev => ({ ...prev, sala: "" }));
+    if (form.salaId && salasAprovadas[form.salaId]) {
+      setForm(prev => ({ ...prev, salaId: "" }));
       addToast("warning", "A sala selecionada foi reservada nesse horário. Escolha outra.");
     }
   }, [salasAprovadas]);
@@ -192,8 +215,8 @@ export default function SolicitarReserva() {
       setEditingId(reserva.id);
 
       let blocoEncontrado = "";
-      for (const [bloco, salas] of Object.entries(SALAS_POR_BLOCO)) {
-        if (salas.includes(reserva.sala)) {
+      for (const [bloco, salas] of Object.entries(salasPorBloco)) {
+        if (salas.includes(reserva.salaId)) {
           blocoEncontrado = bloco;
           break;
         }
@@ -204,7 +227,7 @@ export default function SolicitarReserva() {
         horaInicio: reserva.horaInicio,
         horaFim: reserva.horaFim,
         bloco: blocoEncontrado,
-        sala: reserva.sala,
+        salaId: reserva.salaId,
         nome: reserva.nome,
         email: reserva.email,
         telefone: reserva.telefone || "",
@@ -274,8 +297,8 @@ export default function SolicitarReserva() {
       }
       return null;
     }
-    if (fieldName === "sala") {
-      if (!form.sala) return "Selecione uma sala";
+    if (fieldName === "salaId") {
+      if (!form.salaId) return "Selecione uma sala";
       return null;
     }
     if (fieldName === "nome") {
@@ -324,8 +347,8 @@ const handleChange = (e) => {
     return;
   }
 
-  if (name === "sala" && value) {
-    setErrors(prev => ({ ...prev, sala: undefined }));
+  if (name === "salaId" && value) {
+    setErrors(prev => ({ ...prev, salaId: undefined }));
   }
 
   // Atualiza o form primeiro
@@ -377,14 +400,14 @@ const handleChange = (e) => {
     e.preventDefault();
 
     const allTouched = {
-      data: true, horaInicio: true, horaFim: true, sala: true,
+      data: true, horaInicio: true, horaFim: true, salaId: true,
       nome: true, email: true, departamento: true, finalidade: true, telefone: true
     };
     if (form.finalidade === "outro") allTouched.finalidadeOutro = true;
     setTouched(allTouched);
 
     const newErrors = {};
-    const fields = ["data", "horaInicio", "horaFim", "sala", "nome", "email", "departamento", "finalidade", "telefone"];
+    const fields = ["data", "horaInicio", "horaFim", "salaId", "nome", "email", "departamento", "finalidade", "telefone"];
     if (form.finalidade === "outro") fields.push("finalidadeOutro");
 
     fields.forEach(field => {
@@ -410,7 +433,7 @@ const handleChange = (e) => {
       data: form.data,
       horaInicio: form.horaInicio,
       horaFim: form.horaFim,
-      sala: form.sala,
+      salaId: form.salaId,
       nome: form.nome,
       email: form.email,
       telefone: form.telefone.replace(/\D/g, ""),
@@ -528,21 +551,21 @@ const handleChange = (e) => {
       value={form.bloco}
       disabled={!localizacaoLiberada}
       onChange={(e) => {
-        setForm(prev => ({ ...prev, bloco: e.target.value, sala: "" }));
+        setForm(prev => ({ ...prev, bloco: e.target.value, salaId: "" }));
       }}
       style={{ flex: 1 }}
     >
       <option value="">
         {!localizacaoLiberada ? "Aguarde..." : "Bloco"}
       </option>
-      {Object.keys(SALAS_POR_BLOCO).map(bloco => (
+      {Object.keys(salasPorBloco).map(bloco => (
         <option key={bloco} value={bloco}>{bloco}</option>
       ))}
     </select>
 
     <select
-      name="sala"
-      value={form.sala}
+      name="salaId"
+      value={form.salaId}
       onChange={handleChange}
       disabled={!localizacaoLiberada || !form.bloco}
       style={{ flex: 2 }}
@@ -550,11 +573,11 @@ const handleChange = (e) => {
       <option value="">
         {!localizacaoLiberada ? "Aguarde..." : form.bloco ? "Selecione a sala..." : "Sala"}
       </option>
-      {(SALAS_POR_BLOCO[form.bloco] || []).map(sala => {
-        const bloqueio = salasAprovadas[sala];
+      {(salasPorBloco[form.bloco] || []).map(sala => {
+        const bloqueio = salasAprovadas[sala.id];
         return (
-          <option key={sala} value={sala} disabled={!!bloqueio}>
-            {bloqueio ? `${sala} — ${bloqueio}` : sala}
+          <option key={sala.id} value={sala.id} disabled={!!bloqueio}>
+            {bloqueio ? `${sala.nome} — ${bloqueio}` : sala.nome}
           </option>
         );
       })}
@@ -567,13 +590,13 @@ const handleChange = (e) => {
   )}
 
   {form.bloco && localizacaoLiberada &&
-    Object.keys(salasAprovadas).some(s => SALAS_POR_BLOCO[form.bloco]?.includes(s)) && (
+    Object.keys(salasAprovadas).some(s => salasPorBloco[form.bloco]?.includes(s)) && (
     <p className="info-message">
       Algumas salas estão reservadas nesse horário e não podem ser selecionadas.
     </p>
   )}
 
-  {errors.sala && <p className="error-message">{errors.sala}</p>}
+  {errors.salaId && <p className="error-message">{errors.salaId}</p>}
 </div>
         </div>
 

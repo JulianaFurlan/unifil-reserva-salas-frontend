@@ -27,10 +27,12 @@ export default function Sidebar() {
           <span>Solicitar Reserva</span>
         </NavLink>
 
-        <NavLink to="/conferir-disponibilidade"
-          className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`}>
-          <AiOutlineSearch size={28} />
-          <span>Conferir Disponibilidade</span>
+        <NavLink
+          to="/consultar-disponibilidade"
+          className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`}
+        >
+          <AiOutlineCalendar size={28} />
+          <span>Disponibilidade</span>
         </NavLink>
 
         <NavLink to="/meus-pedidos"
@@ -65,12 +67,6 @@ export default function Sidebar() {
               className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`}>
               <AiOutlineTeam size={28} />
               <span>Gerenciar Usuários</span>
-            </NavLink>
-
-            <NavLink to="/admin/relatorios"
-              className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`}>
-              <AiOutlineCalendar size={28} />
-              <span>Relatórios</span>
             </NavLink>
           </>
         )}

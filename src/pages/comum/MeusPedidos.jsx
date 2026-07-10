@@ -250,7 +250,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
                   <div key={reserva.id} className="solicitacao-item">
                     <div className="solicitacao-info">
                       <div className="solicitacao-titulo">
-                        <strong>{reserva.sala}</strong>
+                        <strong>{reserva.salaNome || 'Sala não encontrada'}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
                         {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
@@ -291,7 +291,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
                   <div key={reserva.id} className="solicitacao-item">
                     <div className="solicitacao-info">
                       <div className="solicitacao-titulo">
-                        <strong>{reserva.sala}</strong>
+                        <strong>{reserva.salaNome || 'Sala não encontrada'}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
                         {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
@@ -331,7 +331,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
                   <div key={reserva.id} className="solicitacao-item finalizado">
                     <div className="solicitacao-info">
                       <div className="solicitacao-titulo">
-                        <strong>{reserva.sala}</strong>
+                        <strong>{reserva.salaNome?.nome || 'Sala não encontrada'}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
                         {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}
