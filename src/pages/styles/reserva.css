@@ -881,92 +881,415 @@
   color: #d97706;
 }
 
-/*TELA CONSULTAR DISPONIBILIDADE*/
+/* ============================================================
+   TELA CONSULTAR DISPONIBILIDADE
+   ============================================================ */
+
+/* CONTAINER PRINCIPAL */
 .disponibilidade-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  padding: 0;
 }
 
-.filtros-disponibilidade {
-  background: white;
-  border-radius: 16px;
-  padding: 20px 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e9ecef;
+/* FILTRO DE DATA */
+.filtro-data-container {
+  max-width: 250px;
+  margin-bottom: 24px;
 }
 
-.grid-disponibilidade {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.card-disponibilidade {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e9ecef;
-  transition: all 0.2s ease;
-}
-
-.card-disponibilidade:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.card-disponibilidade .sala-nome {
-  font-size: 18px;
+.filtro-data-container label {
+  display: block;
   font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 4px;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 6px;
 }
 
-.card-disponibilidade .sala-bloco {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 12px;
-}
-
-.card-disponibilidade .sala-status {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.sala-disponivel {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.sala-indisponivel {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.sala-manutencao {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-/*BOTOES GERAIS*/
-.btn-gerar-pdf {
-  background: #F27F20;
-  color: white;
-  border: none;
-  padding: 10px 20px;
+.filtro-data-container input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
+  font-size: 14px;
+  background: white;
   transition: all 0.2s;
 }
 
-.btn-gerar-pdf:hover {
-  text-decoration: underline;
+.filtro-data-container input:focus {
+  outline: none;
+  border-color: #F27F20;
+  box-shadow: 0 0 0 3px rgba(242, 127, 32, 0.12);
+}
+
+/* TITULO DO BLOCO */
+.bloco-titulo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+  padding-left: 4px;
+  letter-spacing: -0.3px;
+}
+
+/* GRID DE SALAS */
+.salas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 60px;
+}
+
+/* CARD DE SALA */
+.sala-card {
+  min-height: 260px;
+  border-radius: 16px;
+  padding: 24px 20px 18px;
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sala-card:hover:not(.sala-manutencao) {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-color: #d1d9e6;
+}
+
+/* NOME DA SALA */
+.sala-nome {
+  font-weight: 700;
+  font-size: 17px;
+  color: #111827;
+  margin-bottom: 2px;
+  letter-spacing: -0.2px;
+}
+
+/* CAPACIDADE */
+.sala-capacidade {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================================
+   STATUS BADGE
+   ============================================================ */
+.sala-status-badge {
+  display: inline-block;
+  padding: 3px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  width: auto;
+  max-width: fit-content;
+  flex-shrink: 0;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+
+/* CORES DOS STATUS */
+.status-disponivel {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-parcial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-ocupada {
+  background: #fce4ec;
+  color: #b91c1c;
+}
+
+.status-manutencao {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* RECURSOS */
+.sala-recursos {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* LISTA DE HORÁRIOS OCUPADOS */
+.sala-horarios-ocupados {
+  color: #dc2626;
+  max-height: 60px;
+  overflow-y: auto;
+  font-size: 12px;
+  margin-bottom: 12px;
+  background: #fef2f2;
+  padding: 6px 10px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.sala-horarios-ocupados::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sala-horarios-ocupados::-webkit-scrollbar-thumb {
+  background: #fca5a5;
+  border-radius: 4px;
+}
+
+.sala-horarios-ocupados::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sala-horario-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 0;
+  font-weight: 500;
+}
+
+.sala-horario-item::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* NOME DO USUÁRIO (VISÍVEL APENAS PARA GESTOR/ADMIN) */
+.sala-usuario-nome {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+/* ============================================================
+   SALAS EM MANUTENÇÃO
+   ============================================================ */
+.sala-manutencao {
+  background: #fffbeb;
+  border-color: #fcd34d !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 0 1px #fbbf24, 0 4px 12px rgba(251, 191, 36, 0.12);
+  cursor: default;
+}
+
+.sala-manutencao:hover {
+  transform: none !important;
+  box-shadow: 0 0 0 1px #fbbf24, 0 4px 12px rgba(251, 191, 36, 0.12) !important;
+}
+
+.sala-manutencao .sala-nome {
+  color: #1f2937;
+}
+
+.sala-manutencao .sala-status-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sala-manutencao .sala-capacidade,
+.sala-manutencao .sala-recursos {
+  color: #6b7280;
+}
+
+/* SALA EM MANUTENÇÃO - SEM BOTÃO */
+.sala-manutencao .btn-reservar-sala {
+  display: none;
+}
+
+/* INDICADOR DE MANUTENÇÃO NO LUGAR DO BOTÃO */
+.sala-manutencao .sala-manutencao-label {
+  display: block;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 100px;
+  margin-top: auto;
+  border: 1px dashed #fcd34d;
+}
+
+/* ============================================================
+   BOTÃO RESERVAR
+   ============================================================ */
+.btn-reservar-sala {
+  width: 100%;
+  padding: 12px 0;
+  background: #F27F20;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: auto;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(242, 127, 32, 0.2);
+}
+
+.btn-reservar-sala:hover:not(:disabled) {
+  background: #e06e10;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(242, 127, 32, 0.3);
+}
+
+.btn-reservar-sala:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 2px 8px rgba(242, 127, 32, 0.2);
+}
+
+/* BOTÃO INDISPONÍVEL (SALA TOTALMENTE OCUPADA) */
+.btn-indisponivel {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-indisponivel:hover {
+  background: #f3f4f6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   MENSAGEM VAZIA
+   ============================================================ */
+.sem-resultados {
+  text-align: center;
+  padding: 80px 20px;
+  background: #fafbfc;
+  border-radius: 20px;
+  border: 2px dashed #e5e7eb;
+}
+
+.sem-resultados h3 {
+  font-size: 20px;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.sem-resultados p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+.loading-state {
+  text-align: center;
+  padding: 60px;
+  color: #6b7280;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .salas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .sala-card {
+    min-height: 220px;
+    padding: 18px 16px 14px;
+  }
+
+  .bloco-titulo {
+    font-size: 18px;
+  }
+
+  .sala-nome {
+    font-size: 15px;
+  }
+
+  .sala-recursos {
+    font-size: 11px;
+  }
+
+  .btn-reservar-sala {
+    font-size: 13px;
+    padding: 10px 0;
+  }
+
+  .filtro-data-container {
+    max-width: 100%;
+  }
+
+  .sala-usuario-nome {
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .salas-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .sala-card {
+    min-height: 190px;
+    padding: 14px 12px 12px;
+    border-radius: 12px;
+  }
+
+  .sala-nome {
+    font-size: 13px;
+  }
+
+  .sala-capacidade {
+    font-size: 11px;
+  }
+
+  .sala-status-badge {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+
+  .sala-recursos {
+    font-size: 10px;
+  }
+
+  .sala-horarios-ocupados {
+    font-size: 10px;
+    max-height: 40px;
+    padding: 4px 8px;
+  }
+
+  .btn-reservar-sala {
+    font-size: 11px;
+    padding: 8px 0;
+  }
+
+  .sala-manutencao .sala-manutencao-label {
+    font-size: 11px;
+    padding: 6px 0;
+  }
 }
 
 /*TOAST NOTIFICATIONS*/

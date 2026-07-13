@@ -100,7 +100,7 @@ export default function SolicitarReserva() {
     try {
       setCarregandoSalas(true);;
       const response = await api.get("/salas");
-      setSalas(response.data);
+      setSalas(response.data.filter(s => s.status === "ATIVA"));
     } catch (error) {
       console.error("Erro ao carregar salas:", error);
       addToast("error", "Erro ao carregar lista de salas", "Erro");

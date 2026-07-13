@@ -6,8 +6,18 @@ import { AiOutlinePlus, AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import "../styles/reserva.css";
 
 const FORM_VAZIO = {
-nome: "", bloco: "", capacidade: "", recursos: "", status: "DISPONIVEL"
+nome: "", 
+bloco: "", 
+capacidade: "", 
+recursos: "", 
+status: "ATIVA"
 };
+
+const STATUS_OPCOES = [
+{ value: "ATIVA", label: "Ativa" },
+{ value: "MANUTENCAO", label: "Em Manutenção" },
+{ value: "INATIVA", label: "Inativa" }
+];
 
 export default function GerenciarSalas() {
 const [salas, setSalas] = useState([]);
@@ -39,7 +49,8 @@ useEffect(() => { carregar(); }, []);
 
 const abrirModal = (sala = null) => {
 setForm(sala ? {
-    nome: sala.nome, bloco: sala.bloco,
+    nome: sala.nome, 
+    bloco: sala.bloco,
     capacidade: sala.capacidade || "",
     recursos: sala.recursos || "",
     status: sala.status
@@ -73,10 +84,17 @@ try {
 };
 
 const toggleStatus = async (sala) => {
-const novoStatus = sala.status === "DISPONIVEL" ? "MANUTENCAO" : "DISPONIVEL";
+const statusAtual = sala.status;
+let novoStatus;
+
+if (statusAtual === "ATIVA") novoStatus = "MANUTENCAO";
+else if (statusAtual === "MANUTENCAO") novoStatus = "INATIVA";
+else novoStatus = "ATIVA";
+
 try {
     await alterarStatusSala(sala.id, novoStatus);
-    addToast("success", `Sala marcada como ${novoStatus === "DISPONIVEL" ? "Disponível" : "Em Manutenção"}`);
+    const label = { ATIVA: "Ativa", MANUTENCAO: "Manutenção", INATIVA: "Inativa" }[novoStatus];
+    addToast("success", `Sala marcada como ${label}`);
     carregar();
 } catch {
     addToast("error", "Erro ao alterar status");
@@ -92,6 +110,15 @@ try {
 } catch {
     addToast("error", "Erro ao excluir sala");
 }
+};
+
+const getStatusInfo = (status) => {
+const map = {
+    ATIVA: { classe: "status-disponivel", label: "Ativa" },
+    MANUTENCAO: { classe: "status-manutencao", label: "Manutenção" },
+    INATIVA: { classe: "status-inativo", label: "Inativa" }
+};
+return map[status] || map.ATIVA;
 };
 
 return (
@@ -127,8 +154,9 @@ return (
             <div className="form-group">
             <label>Status</label>
             <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))} className="form-input">
-                <option value="DISPONIVEL">Disponível</option>
-                <option value="MANUTENCAO">Em Manutenção</option>
+                {STATUS_OPCOES.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
             </div>
             <div className="modal-buttons">
@@ -172,27 +200,34 @@ return (
                 <td colSpan="6" className="empty-table">Nenhuma sala cadastrada</td>
             </tr>
             ) : (
-            salas.map(sala => (
+            salas.map(sala => {
+                const info = getStatusInfo(sala.status);
+                return (
                 <tr key={sala.id}>
-                <td className="cell-nome">{sala.nome}</td>
-                <td className="cell-bloco">{sala.bloco}</td>
-                <td className="cell-capacidade">{sala.capacidade ? `${sala.capacidade} pessoas` : "—"}</td>
-                <td className="cell-recursos">{sala.recursos || "—"}</td>
-                <td className="cell-status">
-                    <button className={`status-badge-admin status-${sala.status === "DISPONIVEL" ? "disponivel" : "manutencao"}`} onClick={() => toggleStatus(sala)}>
-                    {sala.status === "DISPONIVEL" ? "Disponível" : "Manutenção"}
+                    <td className="cell-nome">{sala.nome}</td>
+                    <td className="cell-bloco">{sala.bloco}</td>
+                    <td className="cell-capacidade">{sala.capacidade ? `${sala.capacidade} pessoas` : "—"}</td>
+                    <td className="cell-recursos">{sala.recursos || "—"}</td>
+                    <td className="cell-status">
+                    <button 
+                        className={`status-badge-admin ${info.classe}`} 
+                        onClick={() => toggleStatus(sala)}
+                        title="Clique para alterar o status"
+                    >
+                        {info.label}
                     </button>
-                </td>
-                <td className="cell-acoes">
+                    </td>
+                    <td className="cell-acoes">
                     <button className="btn-editar" onClick={() => abrirModal(sala)} title="Editar">
-                    <AiOutlineEdit size={18} />
+                        <AiOutlineEdit size={18} />
                     </button>
                     <button className="btn-excluir" onClick={() => excluir(sala.id)} title="Excluir">
-                    <AiOutlineDelete size={18} />
+                        <AiOutlineDelete size={18} />
                     </button>
-                </td>
+                    </td>
                 </tr>
-            ))
+                );
+            })
             )}
         </tbody>
         </table>
