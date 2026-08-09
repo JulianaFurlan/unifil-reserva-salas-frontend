@@ -21,9 +21,26 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const mensagem = error.response?.data?.message || "Sua sessão expirou. Faça login novamente.";
+      
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      
+      try {
+        // Dispara evento de toast global
+        const event = new CustomEvent("showToast", {
+          detail: { type: "warning", message: mensagem, title: "Sessão Expirada" },
+        });
+        window.dispatchEvent(event);
+        
+        // Pequeno delay para o toast aparecer
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      } catch {
+        // Fallback: redireciona imediatamente
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -4,10 +4,10 @@ import autoTable from 'jspdf-autotable';
 import logoUnifil from '../assets/logo-Unifil.png';
 
 // Cores da UniFil
-const COR_PRIMARIA = [242, 127, 32];     // #F27F20 (laranja)
-const COR_SECUNDARIA = [31, 41, 55];     // #1f2937 (cinza escuro)
-const COR_SUCESSO = [34, 197, 94];       // #22c55e (verde)
-const COR_PENDENTE = [245, 158, 11];     // #f59e0b (amarelo)
+const COR_PRIMARIA = [242, 127, 32];
+const COR_SECUNDARIA = [31, 41, 55]; 
+const COR_SUCESSO = [34, 197, 94];
+const COR_PENDENTE = [245, 158, 11];
 
 const formatarData = (dataISO) => {
 if (!dataISO) return '';
@@ -26,7 +26,6 @@ if (!hora) return '';
 return hora.split(':').slice(0, 2).join(':');
 };
 
-// Função para converter logo para base64 (se necessário)
 const getLogoBase64 = async () => {
 try {
 const response = await fetch(logoUnifil);
@@ -86,7 +85,7 @@ reservasFiltradas = reservasFiltradas.filter(r => r.data === filtroData);
 
 reservasFiltradas.sort((a, b) => {
 if (a.data !== b.data) return a.data.localeCompare(b.data);
-if (a.sala !== b.sala) return a.sala.localeCompare(b.sala);
+if (a.salaNome !== b.salaNome) return (a.salaNome || '').localeCompare(b.salaNome || '');
 return a.horaInicio.localeCompare(b.horaInicio);
 });
 
@@ -120,7 +119,7 @@ doc.setTextColor(0, 0, 0);
 
 // Construir linhas da tabela
 const linhas = reservasDia.map(r => [
-    r.sala || '—',
+    r.salaNome || '—',
     `${formatarHorario(r.horaInicio)} – ${formatarHorario(r.horaFim)}`,
     r.nome || '—',
     r.departamento || '—',

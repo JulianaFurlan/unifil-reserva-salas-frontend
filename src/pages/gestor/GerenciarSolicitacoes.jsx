@@ -25,6 +25,10 @@ export default function GerenciarSolicitacoes() {
   const [filtroSala, setFiltroSala] = useState("");
   const [filtroData, setFiltroData] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
+  const [mostrarExpiradas, setMostrarExpiradas] = useState(false);
+  const [showHistorico, setShowHistorico] = useState(false);
+  const [historico, setHistorico] = useState([]);
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
 
   const addToast = (type, message, title = null) => {
     const id = Date.now();
@@ -39,6 +43,27 @@ export default function GerenciarSolicitacoes() {
     if (!hora) return "";
     return hora.split(":").slice(0, 2).join(":");
   };
+
+  // Data/hora de hoje, usadas para detectar reservas expiradas e reservas do dia
+  const agora = new Date();
+  const hojeStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
+
+  const toDateTime = (dataISO, horaStr) => {
+    if (!dataISO || !horaStr) return null;
+    return new Date(`${dataISO}T${horaStr.slice(0, 5)}:00`);
+  };
+
+  // Uma reserva pendente expira quando seu horário final já passou: nesse ponto
+  // ela não pode mais acontecer, então não faz sentido continuar pedindo decisão.
+  const reservaExpirou = (data, horaFim) => {
+    const fim = toDateTime(data, horaFim);
+    if (!fim) return false;
+    return agora > fim;
+  };
+
+  const isUrgente = (reserva) => reserva.data === hojeStr;
+
+  const horariosSobrepoem = (ini1, fim1, ini2, fim2) => !(fim1 <= ini2 || ini1 >= fim2);
 
   const carregarReservas = async () => {
     try {
@@ -56,6 +81,34 @@ export default function GerenciarSolicitacoes() {
   useEffect(() => {
     carregarReservas();
   }, []);
+
+  const carregarHistorico = async () => {
+    try {
+      setLoadingHistorico(true);
+      const response = await api.get("/reservas/historico");
+      setHistorico(response.data);
+    } catch (error) {
+      addToast('error', 'Erro ao carregar histórico');
+    } finally {
+      setLoadingHistorico(false);
+    }
+  };
+
+  const abrirHistorico = () => {
+    setShowHistorico(true);
+    carregarHistorico();
+  };
+
+  const reverterParaPendente = async (id) => {
+    try {
+      await api.put(`/reservas/${id}/reverter`);
+      addToast('success', 'Reserva revertida para pendente', 'Revertida');
+      setShowHistorico(false);
+      carregarReservas();
+    } catch (error) {
+      addToast('error', error.response?.data?.message || 'Erro ao reverter reserva', 'Erro');
+    }
+  };
 
   useEffect(() => {
     let filtradas = [...reservas];
@@ -107,6 +160,11 @@ export default function GerenciarSolicitacoes() {
       return;
     }
 
+    if (tipo === 'aprovar' && conflitoAprovacao) {
+      addToast('error', 'Essa sala já está reservada nesse horário. Rejeite uma das duas antes de aprovar.', 'Conflito de horário');
+      return;
+    }
+
     try {
       if (tipo === 'aprovar') {
         await api.put(`/reservas/${reservaId}/aprovar`);
@@ -144,9 +202,39 @@ export default function GerenciarSolicitacoes() {
     return `${minutos} minutos`;
   };
 
-  const reservasPendentes = reservasFiltradas
-    .filter(r => r.status === "PENDENTE")
-    .sort((a, b) => new Date(a.data) - new Date(b.data));
+  // Uma reserva do histórico só pode ser revertida se o dia dela ainda não passou
+  const isDataPassada = (dataISO) => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataReserva = new Date(`${dataISO}T00:00:00`);
+    return dataReserva < hoje;
+  };
+
+  const reservasPendentesTotal = reservasFiltradas.filter(r => r.status === "PENDENTE");
+
+  // Só seguem para decisão as que ainda podem acontecer, da mais próxima para a mais distante
+  const reservasPendentes = reservasPendentesTotal
+    .filter(r => !reservaExpirou(r.data, r.horaFim))
+    .sort((a, b) => toDateTime(a.data, a.horaInicio) - toDateTime(b.data, b.horaInicio));
+
+  // As que passaram do horário sem decisão ficam à parte, mais recentes primeiro
+  const reservasExpiradas = reservasPendentesTotal
+    .filter(r => reservaExpirou(r.data, r.horaFim))
+    .sort((a, b) => toDateTime(b.data, b.horaFim) - toDateTime(a.data, a.horaFim));
+
+  // Enquanto o modal de aprovação está aberto, verifica se a reserva já colide
+  // com outra que já foi aprovada na mesma sala, data e horário
+  const conflitoAprovacao = (() => {
+    if (!modalConfig.show || modalConfig.tipo !== 'aprovar' || !modalConfig.reservaInfo) return null;
+    const alvo = modalConfig.reservaInfo;
+    return reservas.find(r =>
+      r.id !== alvo.id &&
+      r.status === 'APROVADO' &&
+      r.salaId === alvo.salaId &&
+      r.data === alvo.data &&
+      horariosSobrepoem(alvo.horaInicio, alvo.horaFim, r.horaInicio, r.horaFim)
+    ) || null;
+  })();
 
   const limparFiltros = () => {
     setFiltroSala("");
@@ -201,6 +289,15 @@ export default function GerenciarSolicitacoes() {
                 : 'Informe o motivo da rejeição para o solicitante.'}
             </p>
 
+            {modalConfig.tipo === 'aprovar' && conflitoAprovacao && (
+              <div className="modal-aviso-conflito">
+                <strong>Conflito de horário:</strong> a sala já está aprovada para{" "}
+                {conflitoAprovacao.nome} das {formatarHorario(conflitoAprovacao.horaInicio)} às{" "}
+                {formatarHorario(conflitoAprovacao.horaFim)} nesse mesmo dia. Rejeite uma das duas
+                solicitações antes de aprovar esta.
+              </div>
+            )}
+
             {/* Campo de motivo - apenas para rejeição */}
             {modalConfig.tipo === 'rejeitar' && (
               <div className="modal-rejeicao-container">
@@ -219,7 +316,11 @@ export default function GerenciarSolicitacoes() {
             )}
 
             <div className="modal-buttons">
-              <button className="modal-btn modal-btn-primary" onClick={confirmarAcao}>
+              <button
+                className="modal-btn modal-btn-primary"
+                onClick={confirmarAcao}
+                disabled={modalConfig.tipo === 'aprovar' && !!conflitoAprovacao}
+              >
                 {modalConfig.tipo === 'aprovar' ? 'Sim, aprovar' : 'Sim, rejeitar'}
               </button>
               <button className="modal-btn modal-btn-secondary" onClick={fecharModal}>
@@ -230,12 +331,119 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
+      {/* MODAL DE EXPIRADAS */}
+      {mostrarExpiradas && (
+        <div className="modal-overlay" onClick={() => setMostrarExpiradas(false)}>
+          <div className="modal-content modal-expiradas" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Solicitações expiradas</h3>
+            <p className="modal-message">
+              Passaram do horário sem receber uma decisão e não podem mais acontecer.
+            </p>
+
+            <div className="lista-expiradas">
+              {reservasExpiradas.length === 0 ? (
+                <p className="empty-message">Nenhuma solicitação expirada</p>
+              ) : (
+                reservasExpiradas.map(reserva => (
+                  <div key={reserva.id} className="item-expirada">
+                    <div className="item-expirada-info">
+                      <strong>{reserva.salaNome || "Sala não encontrada"}</strong>
+                      <span>
+                        {formatarData(reserva.data)} · {formatarHorario(reserva.horaInicio)}–{formatarHorario(reserva.horaFim)}
+                      </span>
+                      <span className="item-expirada-solicitante">
+                        {reserva.nome} · {reserva.departamento || "-"}
+                      </span>
+                    </div>
+                    <span className="status-badge status-expirada">Expirada</span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="modal-buttons">
+              <button className="modal-btn modal-btn-secondary" onClick={() => setMostrarExpiradas(false)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE HISTÓRICO */}
+      {showHistorico && (
+        <div className="modal-overlay" onClick={() => setShowHistorico(false)}>
+          <div className="modal-content modal-historico" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Histórico de Reservas</h3>
+            <p className="modal-message">
+              Reservas já aprovadas ou rejeitadas pelo gestor.
+            </p>
+
+            {loadingHistorico ? (
+              <div className="loading-state">Carregando histórico...</div>
+            ) : historico.length === 0 ? (
+              <p className="empty-message">Nenhuma reserva no histórico</p>
+            ) : (
+              <div className="historico-lista">
+                {historico.map(reserva => (
+                  <div key={reserva.id} className="historico-item">
+                    <div className="historico-item-info">
+                      <strong>{reserva.sala?.nome || "Sala não encontrada"}</strong>
+                      <span>
+                        {formatarData(reserva.data)} · {formatarHorario(reserva.horaInicio)}–{formatarHorario(reserva.horaFim)}
+                      </span>
+                      <span className="historico-item-solicitante">
+                        Aberto por: {reserva.usuarioNome || "-"}
+                      </span>
+                      <span className={`status-badge ${reserva.status === 'APROVADO' ? 'status-aprovada' : 'status-negada'}`}>
+                        {reserva.status === 'APROVADO' ? 'Aprovada' : 'Negada'}
+                      </span>
+                    </div>
+                    <div className="historico-item-acoes">
+                      <button
+                        type="button"
+                        className="btn-reverter"
+                        onClick={() => reverterParaPendente(reserva.id)}
+                        disabled={isDataPassada(reserva.data)}
+                        title={isDataPassada(reserva.data) ? "Não é possível reverter: a data já passou" : "Reverter para pendente"}
+                      >
+                        Reverter para pendente
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="modal-buttons">
+              <button className="modal-btn modal-btn-secondary" onClick={() => setShowHistorico(false)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* CABEÇALHO */}
       <div className="page-title-container">
         <h1 className="page-title">Gerenciar Solicitações</h1>
-        <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservas, filtroData || null)}>
-          Gerar PDF
-        </button>
+        <div className="page-title-acoes">
+          {reservasExpiradas.length > 0 && (
+            <button
+              type="button"
+              className="btn-ver-expiradas"
+              onClick={() => setMostrarExpiradas(true)}
+            >
+              Expiradas <span className="btn-ver-expiradas-contador">{reservasExpiradas.length}</span>
+            </button>
+          )}
+          <button type="button" className="btn-historico" onClick={abrirHistorico}>
+            Histórico{historico.length > 0 ? ` [${historico.length}]` : ""}
+          </button>
+          <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservas, filtroData || null)}>
+            Gerar PDF
+          </button>
+        </div>
       </div>
 
       {/* FILTROS */}
@@ -269,7 +477,6 @@ export default function GerenciarSolicitacoes() {
           <div className="filtro-group filtro-busca">
             <label>Buscar</label>
             <div className="busca-wrapper">
-              <AiOutlineSearch className="busca-icon" />
               <input
                 type="text"
                 placeholder="Nome, email, finalidade..."
@@ -298,10 +505,13 @@ export default function GerenciarSolicitacoes() {
           ) : (
             <div className="cards-gestor">
               {reservasPendentes.map(reserva => (
-                <div key={reserva.id} className="card-solicitacao">
+                <div key={reserva.id} className={`card-solicitacao ${isUrgente(reserva) ? "card-urgente" : ""}`}>
                   <div className="card-header-gestor">
                     <div className="card-titulo">
-                      <h3>{reserva.salaNome || "Sala não encontrada"}</h3>
+                      <h3>
+                        {reserva.salaNome || "Sala não encontrada"}
+                        {isUrgente(reserva) && <span className="badge-urgente">⚠ Hoje</span>}
+                      </h3>
                       <span className="card-data">{formatarData(reserva.data)}</span>
                     </div>
                     <div className="card-header-right">

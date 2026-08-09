@@ -38,7 +38,9 @@
   align-items: center;
 }
 
-/*TELA SOLICITAR RESERVA*/
+/* ============================================================
+   TELA SOLICITAR RESERVA
+   ============================================================ */
 .form-container {
   max-width: 100%;
   background: white;
@@ -204,7 +206,9 @@
   margin-top: 4px;
 }
 
-/*TELA MEUS PEDIDOS*/
+/* ============================================================
+   TELA MEUS PEDIDOS
+   ============================================================ */
 .solicitacoes-container {
   display: flex;
   flex-direction: column;
@@ -447,7 +451,9 @@
   font-size: 14px;
 }
 
-/*TELA GERENCIAR SOLICITACOES*/
+/* ============================================================
+   TELA GERENCIAR SOLICITACOES
+   ============================================================ */
 .filtros-container {
   background: white;
   border-radius: 16px;
@@ -519,6 +525,18 @@
 
 .btn-limpar-filtros:hover {
   background: #e5e7eb;
+}
+
+.btn-gerar-pdf {
+  background: #F27F20;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .solicitacoes-gestor-container {
@@ -745,10 +763,264 @@
   color: #6b7280;
 }
 
-/*TELA GERENCIAR SALAS*/
+.badge-urgente {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 10px;
+  padding: 2px 10px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+  animation: badge-piscar 5s ease-in-out infinite;
+}
+
+@keyframes badge-piscar {
+  0%, 80%, 100% {
+    background: rgba(255, 255, 255, 0.25);
+    color: inherit;
+    transform: scale(1);
+    box-shadow: none;
+  }
+  90% {
+    background: #ef4444;
+    color: #fff;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px 2px rgba(239, 68, 68, 0.7);
+  }
+}
+
+.page-title-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-ver-expiradas {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ver-expiradas:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.btn-ver-expiradas-contador {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.modal-expiradas {
+  max-width: 520px !important;
+  text-align: left;
+}
+
+.modal-expiradas .modal-title,
+.modal-expiradas .modal-message {
+  text-align: center;
+}
+
+.btn-historico {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-historico:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.modal-historico {
+  max-width: 560px !important;
+  text-align: left;
+}
+
+.modal-historico .modal-title,
+.modal-historico .modal-message {
+  text-align: center;
+}
+
+.historico-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 24px;
+}
+
+.historico-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fafbfc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+}
+
+.historico-item-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.historico-item-info strong {
+  font-size: 14px;
+  color: #334155;
+}
+
+.historico-item-solicitante {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.historico-item-acoes {
+  flex-shrink: 0;
+}
+
+.btn-reverter {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-reverter:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #c2410c;
+}
+
+.btn-reverter:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lista-expiradas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 24px;
+}
+
+.item-expirada {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fafbfc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+}
+
+.item-expirada-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.item-expirada-info strong {
+  font-size: 14px;
+  color: #334155;
+}
+
+.item-expirada-solicitante {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ============================================================
+   TELA GERENCIAR SALAS
+   ============================================================ */
+
+/* Bloco/tabela/badges/botões abaixo são compartilhados entre Gerenciar Salas
+   e Gerenciar Usuários — mesma linguagem visual nas duas telas de admin. */
+
+.bloco-status {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.bloco-status-cabecalho {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  border-left: 4px solid #22c55e;
+  background: #fafbfc;
+}
+
+.bloco-status-titulo {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.bloco-status-corpo {
+  padding: 0;
+}
+
+.cartao-tabela {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
 .table-container-admin {
   overflow-x: auto;
-  margin-top: 24px;
 }
 
 .admin-table {
@@ -767,31 +1039,46 @@
   text-align: left;
   font-weight: 600;
   color: #374151;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .admin-table td {
   padding: 12px 16px;
   border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+  color: #1f2937;
 }
 
 .admin-table tbody tr:hover {
   background: #fafafa;
 }
 
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .cell-nome {
   font-weight: 500;
 }
 
-.cell-email,
-.cell-bloco,
-.cell-capacidade,
-.cell-recursos,
-.cell-departamento {
+.cell {
   color: #6b7280;
 }
 
+.cell-acoes {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.linha-inativa {
+  opacity: 0.5;
+}
+
 .status-badge-admin {
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 20px;
   border: none;
   cursor: pointer;
@@ -800,34 +1087,53 @@
   transition: all 0.2s;
 }
 
-.status-disponivel {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.status-disponivel:hover {
-  background: #bbf7d0;
-}
-
 .status-manutencao {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .status-manutencao:hover {
-  background: #fecaca;
+  background: #fde68a;
 }
 
-/*TELA GERENCIAR USUARIOS*/
-.usuario-inativo {
-  opacity: 0.5;
+.status-inativa {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: default;
 }
 
+.btn-reativar {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-reativar:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* ============================================================
+   TELA GERENCIAR USUARIOS
+   ============================================================ */
+
+.status-ativa,
 .status-ativo {
   background: #dcfce7;
   color: #16a34a;
 }
 
+.status-ativa:hover,
 .status-ativo:hover {
   background: #bbf7d0;
 }
@@ -884,13 +1190,10 @@
 /* ============================================================
    TELA CONSULTAR DISPONIBILIDADE
    ============================================================ */
-
-/* CONTAINER PRINCIPAL */
 .disponibilidade-container {
   padding: 0;
 }
 
-/* FILTRO DE DATA */
 .filtro-data-container {
   max-width: 250px;
   margin-bottom: 24px;
@@ -920,7 +1223,6 @@
   box-shadow: 0 0 0 3px rgba(242, 127, 32, 0.12);
 }
 
-/* TITULO DO BLOCO */
 .bloco-titulo {
   font-size: 22px;
   font-weight: 700;
@@ -930,7 +1232,6 @@
   letter-spacing: -0.3px;
 }
 
-/* GRID DE SALAS */
 .salas-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -938,7 +1239,6 @@
   margin-bottom: 60px;
 }
 
-/* CARD DE SALA */
 .sala-card {
   min-height: 260px;
   border-radius: 16px;
@@ -958,7 +1258,6 @@
   border-color: #d1d9e6;
 }
 
-/* NOME DA SALA */
 .sala-nome {
   font-weight: 700;
   font-size: 17px;
@@ -967,7 +1266,6 @@
   letter-spacing: -0.2px;
 }
 
-/* CAPACIDADE */
 .sala-capacidade {
   font-size: 13px;
   color: #6b7280;
@@ -977,9 +1275,6 @@
   gap: 4px;
 }
 
-/* ============================================================
-   STATUS BADGE
-   ============================================================ */
 .sala-status-badge {
   display: inline-block;
   padding: 3px 14px;
@@ -994,7 +1289,6 @@
   text-transform: uppercase;
 }
 
-/* CORES DOS STATUS */
 .status-disponivel {
   background: #d1fae5;
   color: #065f46;
@@ -1015,7 +1309,6 @@
   color: #92400e;
 }
 
-/* RECURSOS */
 .sala-recursos {
   font-size: 12px;
   color: #6b7280;
@@ -1027,7 +1320,6 @@
   flex-wrap: wrap;
 }
 
-/* LISTA DE HORÁRIOS OCUPADOS */
 .sala-horarios-ocupados {
   color: #dc2626;
   max-height: 60px;
@@ -1061,27 +1353,13 @@
   font-weight: 500;
 }
 
-.sala-horario-item::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* NOME DO USUÁRIO (VISÍVEL APENAS PARA GESTOR/ADMIN) */
-.sala-usuario-nome {
+.sala-usuario-email {
   color: #9ca3af;
   font-weight: 400;
   font-size: 11px;
   margin-left: 4px;
 }
 
-/* ============================================================
-   SALAS EM MANUTENÇÃO
-   ============================================================ */
 .sala-manutencao {
   background: #fffbeb;
   border-color: #fcd34d !important;
@@ -1109,12 +1387,10 @@
   color: #6b7280;
 }
 
-/* SALA EM MANUTENÇÃO - SEM BOTÃO */
 .sala-manutencao .btn-reservar-sala {
   display: none;
 }
 
-/* INDICADOR DE MANUTENÇÃO NO LUGAR DO BOTÃO */
 .sala-manutencao .sala-manutencao-label {
   display: block;
   text-align: center;
@@ -1128,9 +1404,6 @@
   border: 1px dashed #fcd34d;
 }
 
-/* ============================================================
-   BOTÃO RESERVAR
-   ============================================================ */
 .btn-reservar-sala {
   width: 100%;
   padding: 12px 0;
@@ -1158,7 +1431,6 @@
   box-shadow: 0 2px 8px rgba(242, 127, 32, 0.2);
 }
 
-/* BOTÃO INDISPONÍVEL (SALA TOTALMENTE OCUPADA) */
 .btn-indisponivel {
   background: #f3f4f6 !important;
   color: #9ca3af !important;
@@ -1173,9 +1445,6 @@
   box-shadow: none !important;
 }
 
-/* ============================================================
-   MENSAGEM VAZIA
-   ============================================================ */
 .sem-resultados {
   text-align: center;
   padding: 80px 20px;
@@ -1195,9 +1464,6 @@
   color: #6b7280;
 }
 
-/* ============================================================
-   LOADING
-   ============================================================ */
 .loading-state {
   text-align: center;
   padding: 60px;
@@ -1205,94 +1471,8 @@
 }
 
 /* ============================================================
-   RESPONSIVIDADE
+   TOAST NOTIFICATIONS
    ============================================================ */
-
-@media (max-width: 768px) {
-  .salas-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-  }
-
-  .sala-card {
-    min-height: 220px;
-    padding: 18px 16px 14px;
-  }
-
-  .bloco-titulo {
-    font-size: 18px;
-  }
-
-  .sala-nome {
-    font-size: 15px;
-  }
-
-  .sala-recursos {
-    font-size: 11px;
-  }
-
-  .btn-reservar-sala {
-    font-size: 13px;
-    padding: 10px 0;
-  }
-
-  .filtro-data-container {
-    max-width: 100%;
-  }
-
-  .sala-usuario-nome {
-    display: block;
-    margin-top: 2px;
-  }
-}
-
-@media (max-width: 480px) {
-  .salas-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .sala-card {
-    min-height: 190px;
-    padding: 14px 12px 12px;
-    border-radius: 12px;
-  }
-
-  .sala-nome {
-    font-size: 13px;
-  }
-
-  .sala-capacidade {
-    font-size: 11px;
-  }
-
-  .sala-status-badge {
-    font-size: 10px;
-    padding: 2px 10px;
-  }
-
-  .sala-recursos {
-    font-size: 10px;
-  }
-
-  .sala-horarios-ocupados {
-    font-size: 10px;
-    max-height: 40px;
-    padding: 4px 8px;
-  }
-
-  .btn-reservar-sala {
-    font-size: 11px;
-    padding: 8px 0;
-  }
-
-  .sala-manutencao .sala-manutencao-label {
-    font-size: 11px;
-    padding: 6px 0;
-  }
-}
-
-/*TOAST NOTIFICATIONS*/
 .toast-container {
   position: fixed;
   top: 20px;
@@ -1443,7 +1623,9 @@
   }
 }
 
-/*MODAL DE SUCESSO E MODAIS GERAIS*/
+/* ============================================================
+   MODAIS GERAIS
+   ============================================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1520,6 +1702,25 @@
   transform: translateY(-1px);
 }
 
+.modal-btn-primary:disabled {
+  background: #fca5a5;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modal-aviso-conflito {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #991b1b;
+  text-align: left;
+}
+
 .modal-btn-secondary {
   background: #f3f4f6;
   color: #4b5563;
@@ -1584,7 +1785,6 @@
   text-align: center;
 }
 
-/*MODAL DE REJEICAO*/
 .modal-rejeicao-container {
   width: 100%;
   margin-bottom: 16px;
@@ -1621,7 +1821,6 @@
   margin-top: 4px;
 }
 
-/*STATUS E MOTIVO DE REJEICAO*/
 .status-wrapper {
   display: flex;
   align-items: center;
@@ -1646,7 +1845,9 @@
   color: #b91c1c;
 }
 
-/*TABELA PADRAO*/
+/* ============================================================
+   TABELA PADRAO
+   ============================================================ */
 .table-container {
   margin-top: 30px;
   overflow-x: auto;
@@ -1699,18 +1900,15 @@
   font-size: 13px;
 }
 
-.loading-state {
-  text-align: center;
-  padding: 60px;
-}
-
 .empty-table {
   text-align: center;
   padding: 40px;
   color: #9ca3af;
 }
 
-/*RESPONSIVIDADE*/
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
 @media (max-width: 1100px) {
   .three-columns,
   .two-columns {
@@ -1795,6 +1993,37 @@
     font-size: 18px;
     letter-spacing: 2px;
   }
+
+  .salas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .sala-card {
+    min-height: 220px;
+    padding: 18px 16px 14px;
+  }
+
+  .bloco-titulo {
+    font-size: 18px;
+  }
+
+  .sala-nome {
+    font-size: 15px;
+  }
+
+  .sala-recursos {
+    font-size: 11px;
+  }
+
+  .btn-reservar-sala {
+    font-size: 13px;
+    padding: 10px 0;
+  }
+
+  .filtro-data-container {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1815,5 +2044,60 @@
 
   .motivo-rejeicao {
     white-space: normal;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .btn-reativar {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .salas-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .sala-card {
+    min-height: 190px;
+    padding: 14px 12px 12px;
+    border-radius: 12px;
+  }
+
+  .sala-nome {
+    font-size: 13px;
+  }
+
+  .sala-capacidade {
+    font-size: 11px;
+  }
+
+  .sala-status-badge {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+
+  .sala-recursos {
+    font-size: 10px;
+  }
+
+  .sala-horarios-ocupados {
+    font-size: 10px;
+    max-height: 40px;
+    padding: 4px 8px;
+  }
+
+  .btn-reservar-sala {
+    font-size: 11px;
+    padding: 8px 0;
+  }
+
+  .sala-manutencao .sala-manutencao-label {
+    font-size: 11px;
+    padding: 6px 0;
   }
 }
