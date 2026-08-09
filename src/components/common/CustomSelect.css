@@ -1,0 +1,129 @@
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-flex-1 {
+  flex: 1;
+}
+
+.custom-select-flex-2 {
+  flex: 2;
+}
+
+.custom-select-gatilho {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 15px;
+  font-family: inherit;
+  color: #111827;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.custom-select-gatilho:focus {
+  outline: none;
+}
+
+.custom-select-aberto .custom-select-gatilho {
+  border-color: #FF7A00;
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.15);
+  background: white;
+}
+
+.custom-select-disabled .custom-select-gatilho {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.custom-select-valor {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.custom-select-placeholder {
+  color: #9ca3af;
+}
+
+.custom-select-seta {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform 0.2s;
+}
+
+.custom-select-aberto .custom-select-seta {
+  transform: rotate(180deg);
+}
+
+.custom-select-lista {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #eef0f3;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.12), 0 2px 8px rgba(17, 24, 39, 0.06);
+}
+
+.custom-select-lista::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-select-lista::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+.custom-select-lista::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-select-opcao {
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.custom-select-opcao:not(.custom-select-opcao-disabled):hover,
+.custom-select-opcao-ativa:not(.custom-select-opcao-disabled) {
+  background: #fff1e6;
+  color: #c2410c;
+}
+
+.custom-select-opcao-selecionada {
+  font-weight: 600;
+  color: #e66e00;
+  background: #fff7ed;
+}
+
+.custom-select-opcao-disabled {
+  color: #b0b6c0;
+  cursor: not-allowed;
+}
+
+.custom-select-vazio {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+}

@@ -3,6 +3,7 @@ import api from "../../services/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import Toast from "../../components/common/Toast";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../styles/reserva.css";
 
 const EMAIL_REGEX = /^[^\s@]+@unifil\.br$/;
@@ -175,6 +176,22 @@ export default function SolicitarReserva() {
   });
   return resultado;
 }, [form.data, form.horaInicio, form.horaFim, reservas, editingId, isEditing]);
+
+// captura dados vindos da tela de disponibilidade (data, salaId, horaInicio, horaFim)
+useEffect(() => {
+  if (location.state?.data && location.state?.salaId) {
+    const salaEncontrada = salas.find(s => s.id === location.state.salaId);
+    setForm(prev => ({
+      ...prev,
+      data: location.state.data,
+      salaId: location.state.salaId,
+      bloco: salaEncontrada?.bloco || "",
+      horaInicio: location.state.horaInicio || prev.horaInicio,
+      horaFim: location.state.horaFim || prev.horaFim,
+    }));
+    navigate(location.pathname, { replace: true, state: {} });
+  }
+}, [location.state, salas, navigate]);
 
   useEffect(() => {
     if (!isEditing) {
@@ -546,42 +563,34 @@ const handleChange = (e) => {
   </label>
 
   <div style={{ display: "flex", gap: "8px" }}>
-    <select
+    <CustomSelect
       name="bloco"
       value={form.bloco}
       disabled={!localizacaoLiberada}
+      placeholder={!localizacaoLiberada ? "Aguarde..." : "Bloco"}
       onChange={(e) => {
         setForm(prev => ({ ...prev, bloco: e.target.value, salaId: "" }));
       }}
-      style={{ flex: 1 }}
-    >
-      <option value="">
-        {!localizacaoLiberada ? "Aguarde..." : "Bloco"}
-      </option>
-      {Object.keys(salasPorBloco).map(bloco => (
-        <option key={bloco} value={bloco}>{bloco}</option>
-      ))}
-    </select>
+      options={Object.keys(salasPorBloco).map(bloco => ({ value: bloco, label: bloco }))}
+      className="custom-select-flex-1"
+    />
 
-    <select
+    <CustomSelect
       name="salaId"
       value={form.salaId}
       onChange={handleChange}
       disabled={!localizacaoLiberada || !form.bloco}
-      style={{ flex: 2 }}
-    >
-      <option value="">
-        {!localizacaoLiberada ? "Aguarde..." : form.bloco ? "Selecione a sala..." : "Sala"}
-      </option>
-      {(salasPorBloco[form.bloco] || []).map(sala => {
+      placeholder={!localizacaoLiberada ? "Aguarde..." : form.bloco ? "Selecione a sala..." : "Sala"}
+      options={(salasPorBloco[form.bloco] || []).map(sala => {
         const bloqueio = salasAprovadas[sala.id];
-        return (
-          <option key={sala.id} value={sala.id} disabled={!!bloqueio}>
-            {bloqueio ? `${sala.nome} — ${bloqueio}` : sala.nome}
-          </option>
-        );
+        return {
+          value: sala.id,
+          label: bloqueio ? `${sala.nome} — ${bloqueio}` : sala.nome,
+          disabled: !!bloqueio,
+        };
       })}
-    </select>
+      className="custom-select-flex-2"
+    />
   </div>
 
   {/* Hint embaixo dos selects, não dentro do label */}
@@ -623,23 +632,27 @@ const handleChange = (e) => {
         <div className="form-row two-columns">
         <div className="form-group">
           <label>Departamento <span className="required">*</span></label>
-          <select name="departamento" value={form.departamento} onChange={handleChange} onBlur={handleBlur}>
-            <option value="">Selecione...</option>
-            {DEPARTAMENTOS.map(d => (
-              <option key={d.value} value={d.value}>{d.label}</option>
-            ))}
-          </select>
+          <CustomSelect
+            name="departamento"
+            value={form.departamento}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder="Selecione..."
+            options={DEPARTAMENTOS}
+          />
           {errors.departamento && <p className="error-message">{errors.departamento}</p>}
         </div>
 
         <div className="form-group">
           <label>Finalidade <span className="required">*</span></label>
-          <select name="finalidade" value={form.finalidade} onChange={handleChange} onBlur={handleBlur}>
-            <option value="">Selecione...</option>
-            {FINALIDADES.map(f => (
-              <option key={f.value} value={f.value}>{f.label}</option>
-            ))}
-          </select>
+          <CustomSelect
+            name="finalidade"
+            value={form.finalidade}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder="Selecione..."
+            options={FINALIDADES}
+          />
           {errors.finalidade && <p className="error-message">{errors.finalidade}</p>}
           {form.finalidade === "outro" && (
             <>
