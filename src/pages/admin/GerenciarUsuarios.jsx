@@ -1,6 +1,7 @@
 // src/pages/admin/GerenciarUsuarios.jsx
 import { useState, useEffect } from "react";
 import { getUsuarios, criarUsuario, editarUsuario, alterarAtivo, resetarSenha } from "../../services/adminService";
+import { useToasts } from "../../hooks/useToasts";
 import Toast from "../../components/common/Toast";
 import { AiOutlinePlus, AiOutlineEdit, AiOutlineReload } from "react-icons/ai";
 import "../styles/reserva.css";
@@ -12,17 +13,11 @@ nome: "", email: "", telefone: "", departamento: "", tipo: "COMUM"
 export default function GerenciarUsuarios() {
 const [usuarios, setUsuarios] = useState([]);
 const [loading, setLoading] = useState(true);
-const [toasts, setToasts] = useState([]);
+const { toasts, addToast, removeToast } = useToasts();
 const [modal, setModal] = useState({ aberto: false, usuario: null });
 const [modalSenha, setModalSenha] = useState({ aberto: false, senha: "" });
 const [form, setForm] = useState(FORM_VAZIO);
 const [salvando, setSalvando] = useState(false);
-
-const addToast = (type, message) => {
-const id = Date.now();
-setToasts(prev => [...prev, { id, type, message }]);
-};
-const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
 
 const carregar = async () => {
 try {
@@ -195,7 +190,8 @@ return (
     {loading ? (
     <div className="loading-state">Carregando...</div>
     ) : (
-    <div className="table-container-admin">
+    <div className="cartao-tabela">
+      <div className="table-container-admin">
         <table className="admin-table">
         <thead>
             <tr>
@@ -214,10 +210,10 @@ return (
             </tr>
             ) : (
             usuarios.map(u => (
-                <tr key={u.id} className={!u.ativo ? "usuario-inativo" : ""}>
+                <tr key={u.id} className={!u.ativo ? "linha-inativa" : ""}>
                 <td className="cell-nome">{u.nome}</td>
-                <td className="cell-email">{u.email}</td>
-                <td className="cell-departamento">{u.departamento || "—"}</td>
+                <td className="cell cell-email">{u.email}</td>
+                <td className="cell cell-departamento">{u.departamento || "—"}</td>
                 <td className="cell-perfil">
                     <span className={`perfil-badge perfil-${u.tipo.toLowerCase()}`}>
                     {u.tipo}
@@ -241,6 +237,7 @@ return (
             )}
         </tbody>
         </table>
+      </div>
     </div>
     )}
 </>

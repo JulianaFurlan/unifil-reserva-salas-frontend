@@ -37,6 +37,14 @@ export default function Login() {
 
     if (!result.success) {
       setError(result.message);
+      setLoading(false);
+      return;
+    }
+
+    if (result.user?.senhaTemporaria) {
+      navigate('/alterar-senha');
+      setLoading(false);
+      return;
     }
 
     setLoading(false);

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { AiOutlineHome, AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import { AiOutlineHome, AiOutlineMenu, AiOutlineClose, AiOutlineLock } from "react-icons/ai";
 import { BsCalendarCheck, BsInboxes } from "react-icons/bs";
 import { FiUserPlus } from "react-icons/fi";
 import { LuSearch } from "react-icons/lu";
@@ -115,6 +115,10 @@ export default function Layout() {
                 <span className="user-name">{user?.nome || 'Usuário'}</span>
                 <span className="user-role">{user?.tipo || 'COMUM'}</span>
               </div>
+              <button onClick={() => navigate('/alterar-senha')} className="alterar-senha-btn">
+                <AiOutlineLock size={14} />
+                Alterar senha
+              </button>
               <button onClick={handleLogout} className="logout-btn">
                 Sair
               </button>

@@ -3,6 +3,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Layout from "./components/common/Layout";
 import Login from "./pages/auth/Login";
+import AlterarSenha from "./pages/auth/AlterarSenha";
 import SolicitarReserva from "./pages/comum/SolicitarReserva";
 import MeusPedidos from "./pages/comum/MeusPedidos";
 import ConsultarDisponibilidade from "./pages/comum/ConsultarDisponibilidade";
@@ -16,6 +17,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/alterar-senha" element={<AlterarSenha />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
