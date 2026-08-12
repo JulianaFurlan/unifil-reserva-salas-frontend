@@ -1,238 +1,492 @@
 // src/pages/admin/GerenciarSalas.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getSalas, criarSala, editarSala, alterarStatusSala, deletarSala } from "../../services/adminService";
+import api from "../../services/api";
 import Toast from "../../components/common/Toast";
-import { AiOutlinePlus, AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
+import { useToasts } from "../../hooks/useToasts";
+import { hojeISO } from "../../utils/horarios";
+import { AiOutlinePlus, AiOutlineEdit, AiOutlineDelete, AiOutlineSwap, AiOutlineTeam } from "react-icons/ai";
 import "../styles/reserva.css";
 
 const FORM_VAZIO = {
-nome: "", 
-bloco: "", 
-capacidade: "", 
-recursos: "", 
-status: "ATIVA"
+  nome: "",
+  bloco: "",
+  tipo: "",
+  capacidade: "",
+  recursos: "",
+  status: "ATIVA",
 };
 
 const STATUS_OPCOES = [
-{ value: "ATIVA", label: "Ativa" },
-{ value: "MANUTENCAO", label: "Em Manutenção" },
-{ value: "INATIVA", label: "Inativa" }
+  { value: "ATIVA", label: "Ativa" },
+  { value: "MANUTENCAO", label: "Em Manutenção" },
+  { value: "INATIVA", label: "Inativa" },
 ];
 
+const PROXIMO_STATUS = {
+  ATIVA: "MANUTENCAO",
+  MANUTENCAO: "INATIVA",
+  INATIVA: "ATIVA",
+};
+
+const LABEL_STATUS = {
+  ATIVA: "Ativa",
+  MANUTENCAO: "Em Manutenção",
+  INATIVA: "Inativa",
+};
+
+const TABS = [
+  { valor: "TODAS", label: "Todas" },
+  { valor: "ATIVA", label: "Ativas" },
+  { valor: "MANUTENCAO", label: "Manutenção" },
+  { valor: "INATIVA", label: "Inativas" },
+];
+
+const validarCapacidade = (valor) => {
+  if (!valor) return true;
+  const num = Number(valor);
+  if (isNaN(num)) return false;
+  if (num < 0) return false;
+  if (num > 999) return false;
+  return true;
+};
+
 export default function GerenciarSalas() {
-const [salas, setSalas] = useState([]);
-const [loading, setLoading] = useState(true);
-const [toasts, setToasts] = useState([]);
-const [modal, setModal] = useState({ aberto: false, sala: null });
-const [form, setForm] = useState(FORM_VAZIO);
-const [salvando, setSalvando] = useState(false);
+  const [salas, setSalas] = useState([]);
+  const [reservasAprovadas, setReservasAprovadas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { toasts, addToast, removeToast } = useToasts();
 
-const addToast = (type, message) => {
-const id = Date.now();
-setToasts(prev => [...prev, { id, type, message }]);
-};
-const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+  const [busca, setBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("TODAS");
 
-const carregar = async () => {
-try {
-    setLoading(true);
-    const res = await getSalas();
-    setSalas(res.data);
-} catch {
-    addToast("error", "Erro ao carregar salas");
-} finally {
-    setLoading(false);
-}
-};
+  const [modal, setModal] = useState({ aberto: false, sala: null });
+  const [form, setForm] = useState(FORM_VAZIO);
+  const [salvando, setSalvando] = useState(false);
+  const [erros, setErros] = useState({});
 
-useEffect(() => { carregar(); }, []);
+  const [modalExcluir, setModalExcluir] = useState({ aberto: false, sala: null });
+  const [excluindo, setExcluindo] = useState(false);
 
-const abrirModal = (sala = null) => {
-setForm(sala ? {
-    nome: sala.nome, 
-    bloco: sala.bloco,
-    capacidade: sala.capacidade || "",
-    recursos: sala.recursos || "",
-    status: sala.status
-} : FORM_VAZIO);
-setModal({ aberto: true, sala });
-};
+  const [salaDestaqueId, setSalaDestaqueId] = useState(null);
 
-const fecharModal = () => {
-setModal({ aberto: false, sala: null });
-setForm(FORM_VAZIO);
-};
-
-const salvar = async (e) => {
-e.preventDefault();
-setSalvando(true);
-try {
-    if (modal.sala) {
-    await editarSala(modal.sala.id, form);
-    addToast("success", "Sala atualizada!");
-    } else {
-    await criarSala(form);
-    addToast("success", "Sala cadastrada!");
+  const carregar = async () => {
+    try {
+      setLoading(true);
+      const [salasRes, reservasRes] = await Promise.all([
+        getSalas(),
+        api.get("/reservas/aprovadas"),
+      ]);
+      setSalas(salasRes.data);
+      setReservasAprovadas(reservasRes.data);
+    } catch {
+      addToast("error", "Erro ao carregar salas");
+    } finally {
+      setLoading(false);
     }
-    carregar();
-    fecharModal();
-} catch (err) {
-    addToast("error", err.response?.data?.message || "Erro ao salvar sala");
-} finally {
-    setSalvando(false);
-}
-};
+  };
 
-const toggleStatus = async (sala) => {
-const statusAtual = sala.status;
-let novoStatus;
+  useEffect(() => { carregar(); }, []);
 
-if (statusAtual === "ATIVA") novoStatus = "MANUTENCAO";
-else if (statusAtual === "MANUTENCAO") novoStatus = "INATIVA";
-else novoStatus = "ATIVA";
+  const totalAtivas = salas.filter(s => s.status === "ATIVA").length;
+  const totalManutencao = salas.filter(s => s.status === "MANUTENCAO").length;
+  const totalInativas = salas.filter(s => s.status === "INATIVA").length;
 
-try {
-    await alterarStatusSala(sala.id, novoStatus);
-    const label = { ATIVA: "Ativa", MANUTENCAO: "Manutenção", INATIVA: "Inativa" }[novoStatus];
-    addToast("success", `Sala marcada como ${label}`);
-    carregar();
-} catch {
-    addToast("error", "Erro ao alterar status");
-}
-};
+  const blocosExistentes = useMemo(
+    () => [...new Set(salas.map(s => s.bloco).filter(Boolean))],
+    [salas]
+  );
 
-const excluir = async (id) => {
-if (!window.confirm("Deseja excluir esta sala? Esta ação não pode ser desfeita.")) return;
-try {
-    await deletarSala(id);
-    addToast("success", "Sala excluída");
-    carregar();
-} catch {
-    addToast("error", "Erro ao excluir sala");
-}
-};
+  const salasPorBloco = useMemo(() => {
+    let lista = salas;
 
-const getStatusInfo = (status) => {
-const map = {
-    ATIVA: { classe: "status-disponivel", label: "Ativa" },
-    MANUTENCAO: { classe: "status-manutencao", label: "Manutenção" },
-    INATIVA: { classe: "status-inativo", label: "Inativa" }
-};
-return map[status] || map.ATIVA;
-};
+    if (filtroStatus !== "TODAS") {
+      lista = lista.filter(s => s.status === filtroStatus);
+    }
 
-return (
-<>
-    <div className="toast-container">
-    {toasts.map(t => (
-        <Toast key={t.id} id={t.id} type={t.type} message={t.message} onClose={removeToast} duration={3000} />
-    ))}
-    </div>
+    if (busca.trim()) {
+      const termo = busca.trim().toLowerCase();
+      lista = lista.filter(s =>
+        s.nome.toLowerCase().includes(termo) || s.bloco.toLowerCase().includes(termo)
+      );
+    }
 
-    {/* MODAL */}
-    {modal.aberto && (
-    <div className="modal-overlay" onClick={fecharModal}>
-        <div className="modal-content modal-sala" onClick={e => e.stopPropagation()}>
-        <h3 className="modal-title">{modal.sala ? "Editar Sala" : "Nova Sala"}</h3>
-        <form onSubmit={salvar}>
-            <div className="form-group">
-            <label>Nome *</label>
-            <input required value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Lab 2" className="form-input" />
-            </div>
-            <div className="form-group">
-            <label>Bloco *</label>
-            <input required value={form.bloco} onChange={e => setForm(p => ({ ...p, bloco: e.target.value }))} placeholder="Ex: SEDE, Ipollon II" className="form-input" />
-            </div>
-            <div className="form-group">
-            <label>Capacidade</label>
-            <input type="number" min="1" value={form.capacidade} onChange={e => setForm(p => ({ ...p, capacidade: e.target.value }))} placeholder="Nº de pessoas" className="form-input" />
-            </div>
-            <div className="form-group">
-            <label>Recursos</label>
-            <input value={form.recursos} onChange={e => setForm(p => ({ ...p, recursos: e.target.value }))} placeholder="Ex: Projetor, Ar-condicionado" className="form-input" />
-            </div>
-            <div className="form-group">
-            <label>Status</label>
-            <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))} className="form-input">
-                {STATUS_OPCOES.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-            </select>
-            </div>
-            <div className="modal-buttons">
-            <button type="submit" className="modal-btn modal-btn-primary" disabled={salvando}>
-                {salvando ? "Salvando..." : "Salvar"}
-            </button>
-            <button type="button" className="modal-btn modal-btn-secondary" onClick={fecharModal}>
+    const agrupado = {};
+    [...lista]
+      .sort((a, b) => a.nome.localeCompare(b.nome))
+      .forEach(sala => {
+        if (!agrupado[sala.bloco]) agrupado[sala.bloco] = [];
+        agrupado[sala.bloco].push(sala);
+      });
+    return agrupado;
+  }, [salas, filtroStatus, busca]);
+
+  const salaOcupadaHoje = (salaId) => {
+    const hoje = hojeISO();
+    return reservasAprovadas.some(r => r.salaId === salaId && r.data === hoje);
+  };
+
+  const abrirModal = (sala = null) => {
+    setErros({});
+    setForm(sala ? {
+      nome: sala.nome,
+      bloco: sala.bloco,
+      tipo: sala.tipo || "",
+      capacidade: sala.capacidade || "",
+      recursos: sala.recursos || "",
+      status: sala.status,
+    } : FORM_VAZIO);
+    setModal({ aberto: true, sala });
+  };
+
+  const fecharModal = () => {
+    setModal({ aberto: false, sala: null });
+    setForm(FORM_VAZIO);
+    setErros({});
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+
+    if (name === "capacidade" && value && !validarCapacidade(value)) {
+      setErros(prev => ({ ...prev, capacidade: "Capacidade inválida (máx 999 pessoas)" }));
+    } else if (erros[name]) {
+      setErros(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const salvar = async (e) => {
+    e.preventDefault();
+
+    const novosErros = {};
+    if (!form.nome.trim()) novosErros.nome = "Nome é obrigatório";
+    if (!form.bloco.trim()) novosErros.bloco = "Bloco é obrigatório";
+    if (form.capacidade && !validarCapacidade(form.capacidade)) {
+      novosErros.capacidade = "Capacidade inválida (máx 999 pessoas)";
+    }
+
+    if (Object.keys(novosErros).length > 0) {
+      setErros(novosErros);
+      addToast("warning", "Preencha os campos obrigatórios corretamente");
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      if (modal.sala) {
+        await editarSala(modal.sala.id, form);
+        addToast("success", "Sala atualizada!");
+        fecharModal();
+        carregar();
+      } else {
+        const res = await criarSala(form);
+        addToast("success", "Sala cadastrada!");
+        fecharModal();
+        await carregar();
+        const novoId = res?.data?.id;
+        if (novoId) {
+          setSalaDestaqueId(novoId);
+          setTimeout(() => setSalaDestaqueId(null), 3000);
+        }
+      }
+    } catch (err) {
+      addToast("error", err.response?.data?.message || "Erro ao salvar sala");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const alternarStatus = async (sala) => {
+    const novoStatus = PROXIMO_STATUS[sala.status] || "ATIVA";
+    try {
+      await alterarStatusSala(sala.id, novoStatus);
+      addToast("success", `Sala "${sala.nome}" agora está ${LABEL_STATUS[novoStatus]}`);
+      carregar();
+    } catch (err) {
+      addToast("error", err.response?.data?.message || "Erro ao alterar status");
+    }
+  };
+
+  const abrirModalExcluir = (sala) => setModalExcluir({ aberto: true, sala });
+  const fecharModalExcluir = () => setModalExcluir({ aberto: false, sala: null });
+
+  const confirmarExclusao = async () => {
+    const { sala } = modalExcluir;
+    setExcluindo(true);
+    try {
+      await deletarSala(sala.id);
+      addToast("success", `Sala "${sala.nome}" excluída`);
+      fecharModalExcluir();
+      carregar();
+    } catch (err) {
+      addToast("error", err.response?.data?.message || "Não foi possível excluir esta sala");
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
+  return (
+    <div className="gs-container">
+      <div className="toast-container">
+        {toasts.map(t => (
+          <Toast key={t.id} id={t.id} type={t.type} message={t.message} onClose={removeToast} duration={3000} />
+        ))}
+      </div>
+
+      {/* MODAL DE EXCLUSÃO */}
+      {modalExcluir.aberto && (
+        <div className="modal-overlay" onClick={fecharModalExcluir}>
+          <div className="gs-modal gs-modal-pequeno" onClick={e => e.stopPropagation()}>
+            <h3 className="gs-modal-titulo">Excluir Sala</h3>
+            <p className="gs-modal-texto">
+              Tem certeza que deseja excluir a sala <strong>"{modalExcluir.sala?.nome}"</strong>?
+              Essa ação não pode ser desfeita. Se a sala tiver reservas associadas, a exclusão será bloqueada.
+            </p>
+            <div className="gs-modal-rodape">
+              <button type="button" className="gs-btn-cancelar" onClick={fecharModalExcluir}>
                 Cancelar
-            </button>
+              </button>
+              <button type="button" className="gs-btn-excluir-confirmar" onClick={confirmarExclusao} disabled={excluindo}>
+                {excluindo ? "Excluindo..." : "Sim, excluir"}
+              </button>
             </div>
-        </form>
+          </div>
         </div>
-    </div>
-    )}
+      )}
 
-    <div className="page-title-container page-title-actions">
-    <h1 className="page-title">Gerenciar Salas</h1>
-    <button className="btn-confirm btn-novo" onClick={() => abrirModal()}>
-        <AiOutlinePlus size={20} /> Nova Sala
-    </button>
-    </div>
+      {/* MODAL DE CADASTRO/EDIÇÃO */}
+      {modal.aberto && (
+        <div className="modal-overlay" onClick={fecharModal}>
+          <div className="gs-modal" onClick={e => e.stopPropagation()}>
+            <h3 className="gs-modal-titulo">{modal.sala ? "Editar Sala" : "Nova Sala"}</h3>
 
-    {loading ? (
-    <div className="loading-state">Carregando...</div>
-    ) : (
-    <div className="table-container-admin">
-        <table className="admin-table">
-        <thead>
-            <tr>
-            <th>Nome</th>
-            <th>Bloco</th>
-            <th>Capacidade</th>
-            <th>Recursos</th>
-            <th>Status</th>
-            <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {salas.length === 0 ? (
-            <tr>
-                <td colSpan="6" className="empty-table">Nenhuma sala cadastrada</td>
-            </tr>
-            ) : (
-            salas.map(sala => {
-                const info = getStatusInfo(sala.status);
+            <form onSubmit={salvar}>
+              <div className="gs-modal-grid-2">
+                <div className="gs-campo">
+                  <label>Nome <span className="gs-obrigatorio">*</span></label>
+                  <input
+                    className="gs-input"
+                    value={form.nome}
+                    onChange={handleChange}
+                    name="nome"
+                    placeholder="Ex: Lab 2"
+                  />
+                  {erros.nome && <p className="gs-erro-campo">{erros.nome}</p>}
+                </div>
+
+                <div className="gs-campo">
+                  <label>Bloco <span className="gs-obrigatorio">*</span></label>
+                  <input
+                    className="gs-input"
+                    list="gs-blocos-lista"
+                    value={form.bloco}
+                    onChange={handleChange}
+                    name="bloco"
+                    placeholder="Ex: SEDE, Ipollon II"
+                  />
+                  <datalist id="gs-blocos-lista">
+                    {blocosExistentes.map(b => <option key={b} value={b} />)}
+                  </datalist>
+                  {erros.bloco && <p className="gs-erro-campo">{erros.bloco}</p>}
+                </div>
+              </div>
+
+              <div className="gs-modal-grid-2">
+                <div className="gs-campo">
+                  <label>Capacidade</label>
+                  <input
+                    className="gs-input"
+                    type="number"
+                    min="1"
+                    max="999"
+                    value={form.capacidade}
+                    onChange={handleChange}
+                    name="capacidade"
+                    placeholder="Nº de pessoas"
+                  />
+                  {erros.capacidade && <p className="gs-erro-campo">{erros.capacidade}</p>}
+                </div>
+
+                <div className="gs-campo">
+                  <label>Status</label>
+                  <select className="gs-select" value={form.status} onChange={handleChange} name="status">
+                    {STATUS_OPCOES.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="gs-campo">
+                <label>Tipo</label>
+                <input
+                  className="gs-input"
+                  value={form.tipo}
+                  onChange={handleChange}
+                  name="tipo"
+                  placeholder="Ex: Laboratório, Sala de Aula, Auditório"
+                />
+              </div>
+
+              <div className="gs-campo">
+                <label>Recursos</label>
+                <input
+                  className="gs-input"
+                  value={form.recursos}
+                  onChange={handleChange}
+                  name="recursos"
+                  placeholder="Ex: Projetor, Ar-condicionado, Quadro"
+                />
+              </div>
+
+              <div className="gs-modal-rodape">
+                <button type="button" className="gs-btn-cancelar" onClick={fecharModal}>
+                  Cancelar
+                </button>
+                <button type="submit" className="gs-btn-salvar" disabled={salvando}>
+                  {salvando ? "Salvando..." : "Salvar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CABEÇALHO */}
+      <div className="gs-header">
+        <div className="gs-header-titulo">
+          <h1>Gerenciar Salas</h1>
+          <span className="gs-header-contador">
+            {salas.length} sala{salas.length !== 1 ? "s" : ""} cadastrada{salas.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <button className="gs-btn-nova" onClick={() => abrirModal()}>
+          <AiOutlinePlus size={18} /> Nova Sala
+        </button>
+      </div>
+
+      {/* ESTATISTICAS */}
+      <div className="gs-stats-bar">
+        <div className="gs-stat-card gs-stat-card-ativa">
+          <span className="gs-stat-numero">{totalAtivas}</span>
+          <span className="gs-stat-label">Ativas</span>
+        </div>
+        <div className="gs-stat-card gs-stat-card-manutencao">
+          <span className="gs-stat-numero">{totalManutencao}</span>
+          <span className="gs-stat-label">Em manutenção</span>
+        </div>
+        <div className="gs-stat-card gs-stat-card-inativa">
+          <span className="gs-stat-numero">{totalInativas}</span>
+          <span className="gs-stat-label">Inativas</span>
+        </div>
+      </div>
+
+      {/* BUSCA E FILTROS */}
+      <div className="gs-search-filter-bar">
+        <input
+          type="text"
+          className="gs-busca-input"
+          placeholder="Buscar por nome ou bloco..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+        />
+        <div className="gs-tabs">
+          {TABS.map(tab => (
+            <button
+              key={tab.valor}
+              type="button"
+              className={`gs-tab ${filtroStatus === tab.valor ? "gs-tab-ativa" : ""}`}
+              onClick={() => setFiltroStatus(tab.valor)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* LISTAGEM */}
+      {loading ? (
+        <div className="gs-loading">Carregando...</div>
+      ) : Object.keys(salasPorBloco).length === 0 ? (
+        <p className="gs-vazio">Nenhuma sala encontrada.</p>
+      ) : (
+        Object.entries(salasPorBloco).map(([bloco, salasDoBloco]) => (
+          <div key={bloco} className="gs-bloco-section">
+            <div className="gs-bloco-header">
+              <h2>{bloco}</h2>
+              <span className="gs-bloco-contador">{salasDoBloco.length}</span>
+            </div>
+
+            <div className="gs-cards-grid">
+              {salasDoBloco.map(sala => {
+                const classeStatus =
+                  sala.status === "ATIVA" ? "gs-sala-ativa" :
+                  sala.status === "MANUTENCAO" ? "gs-sala-manutencao" :
+                  "gs-sala-inativa";
+
+                const ocupada = salaOcupadaHoje(sala.id);
+
+                const recursos = sala.recursos
+                  ? sala.recursos.split(",").map(r => r.trim()).filter(Boolean)
+                  : [];
+
                 return (
-                <tr key={sala.id}>
-                    <td className="cell-nome">{sala.nome}</td>
-                    <td className="cell-bloco">{sala.bloco}</td>
-                    <td className="cell-capacidade">{sala.capacidade ? `${sala.capacidade} pessoas` : "—"}</td>
-                    <td className="cell-recursos">{sala.recursos || "—"}</td>
-                    <td className="cell-status">
-                    <button 
-                        className={`status-badge-admin ${info.classe}`} 
-                        onClick={() => toggleStatus(sala)}
-                        title="Clique para alterar o status"
-                    >
-                        {info.label}
-                    </button>
-                    </td>
-                    <td className="cell-acoes">
-                    <button className="btn-editar" onClick={() => abrirModal(sala)} title="Editar">
-                        <AiOutlineEdit size={18} />
-                    </button>
-                    <button className="btn-excluir" onClick={() => excluir(sala.id)} title="Excluir">
-                        <AiOutlineDelete size={18} />
-                    </button>
-                    </td>
-                </tr>
+                  <div
+                    key={sala.id}
+                    className={`gs-sala-card ${classeStatus} ${salaDestaqueId === sala.id ? "gs-sala-highlight" : ""}`}
+                  >
+                    <div className="gs-sala-nome">{sala.nome}</div>
+
+                    <span className={`gs-sala-status-badge gs-status-${sala.status.toLowerCase()}`}>
+                      {LABEL_STATUS[sala.status] || sala.status}
+                    </span>
+
+                    {sala.status !== "INATIVA" && (
+                      <div className={`gs-ocupacao-hoje ${ocupada ? "gs-ocupada-hoje" : "gs-livre-hoje"}`}>
+                        {ocupada ? "Ocupada hoje" : "Livre hoje"}
+                      </div>
+                    )}
+
+                    <div className="gs-sala-info">
+                      {sala.tipo && <span className="gs-sala-tipo">{sala.tipo}</span>}
+                      {sala.capacidade && (
+                        <span className="gs-sala-capacidade">
+                          <AiOutlineTeam size={14} /> {sala.capacidade} pessoas
+                        </span>
+                      )}
+                    </div>
+
+                    {recursos.length > 0 && (
+                      <div className="gs-sala-recursos-chips">
+                        {recursos.map((r, i) => (
+                          <span key={`${sala.id}-${i}`} className="gs-recurso-chip">{r}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="gs-sala-acoes">
+                      <button className="gs-btn-acao" onClick={() => abrirModal(sala)} title="Editar sala">
+                        <AiOutlineEdit size={16} /> Editar
+                      </button>
+                      <button className="gs-btn-acao" onClick={() => alternarStatus(sala)} title="Alternar status">
+                        <AiOutlineSwap size={16} /> Status
+                      </button>
+                      <button
+                        className="gs-btn-acao gs-btn-acao-perigo"
+                        onClick={() => abrirModalExcluir(sala)}
+                        title="Excluir sala"
+                      >
+                        <AiOutlineDelete size={16} /> Excluir
+                      </button>
+                    </div>
+                  </div>
                 );
-            })
-            )}
-        </tbody>
-        </table>
+              })}
+            </div>
+          </div>
+        ))
+      )}
     </div>
-    )}
-</>
-);
+  );
 }

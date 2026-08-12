@@ -1067,6 +1067,45 @@
 }
 
 /* ============================================================
+   TELA ALTERAR SENHA
+   Reaproveita as classes de login.css; só o que é exclusivo daqui
+   entra com o prefixo "as-".
+   ============================================================ */
+
+.banner-senha-temporaria {
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto 24px;
+  padding: 14px 18px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  color: #9a3412;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.as-btn-voltar {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 20px;
+  background: transparent;
+  border: none;
+  color: #6C6C6C;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.as-btn-voltar:hover {
+  color: #f58220;
+}
+
+/* ============================================================
    TELA GERENCIAR SALAS
    Sistema isolado (prefixo gs-), não compartilhado com outras telas.
    ============================================================ */
