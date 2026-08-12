@@ -2,41 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import Toast from "../../components/common/Toast";
+import BotaoAjuda from "../../components/common/BotaoAjuda";
+import { useToasts } from "../../hooks/useToasts";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import { formatarData, formatarHorario } from "../../utils/formatadores";
+import { toDateTime } from "../../utils/horarios";
 import "../styles/reserva.css";
-
-const formatarData = (dataISO) => {
-  if (!dataISO) return "";
-  const [ano, mes, dia] = dataISO.split("-");
-  return `${dia}/${mes}/${ano}`;
-};
-
-const formatarHorario = (hora) => {
-  if (!hora) return "";
-  return hora.slice(0, 5);
-};
-
-const toDateTime = (dataISO, horaStr) => {
-  if (!dataISO || !horaStr) return null;
-  const hora = horaStr.slice(0, 5);
-  return new Date(`${dataISO}T${hora}:00`);
-};
 
 export default function MeusPedidos() {
   const [limitarFinalizadas, setLimitarFinalizadas] = useState(7);
   const navigate = useNavigate();
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [toasts, setToasts] = useState([]);
-
-  const addToast = (type, message, title = null) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, type, message, title }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
+  const { toasts, addToast, removeToast } = useToasts();
 
 const [showEditConfirmation, setShowEditConfirmation] = useState(false);
 const [reservaSelecionada, setReservaSelecionada] = useState(null);
@@ -228,7 +206,14 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
 )}
 
       <div className="page-title-container">
-        <h1 className="page-title">Minhas Solicitações</h1>
+        <div className="page-title-com-ajuda">
+          <h1 className="page-title">Minhas Solicitações</h1>
+          <BotaoAjuda
+            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_PEDIDOS"
+            titulo="Como acompanhar meus pedidos"
+            descricao="Veja como acompanhar o status das suas reservas e cancelar se necessário."
+          />
+        </div>
       </div>
 
       {loading ? (

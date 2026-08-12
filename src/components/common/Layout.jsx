@@ -7,6 +7,7 @@ import { BsCalendarCheck, BsInboxes } from "react-icons/bs";
 import { FiUserPlus } from "react-icons/fi";
 import { LuSearch } from "react-icons/lu";
 import { TbBuildingCog } from "react-icons/tb";
+import BannerPrimeiroAcesso from "./BannerPrimeiroAcesso";
 import logoUnifil from "../../assets/logo-Unifil.png";
 import "./Layout.css";
 
@@ -122,6 +123,7 @@ export default function Layout() {
         </aside>
 
         <main className="content-area">
+          <BannerPrimeiroAcesso />
           <Outlet />
         </main>
       </div>

@@ -94,7 +94,7 @@ body {
   margin-bottom: 28px;
 }
 
-.form-group label {
+.login-container .form-group label {
   display: block;
   margin-bottom: 12px;
   font-size: 1rem;
@@ -239,7 +239,7 @@ body {
     padding: 20px;
   }
   
-  .form-group label {
+  .login-container .form-group label {
     padding-left: 40px;
   }
   

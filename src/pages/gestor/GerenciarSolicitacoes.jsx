@@ -2,9 +2,14 @@
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
+import { useToasts } from "../../hooks/useToasts";
 import Toast from "../../components/common/Toast";
+import BotaoAjuda from "../../components/common/BotaoAjuda";
 import { AiOutlineCheck, AiOutlineClose, AiOutlineSearch } from "react-icons/ai";
+import { Mail } from "lucide-react";
 import { gerarPdfOcupacao } from '../../utils/gerarPdfOcupacao';
+import { formatarData, formatarHorario } from '../../utils/formatadores';
+import { horariosSobrepoem, toDateTime, hojeISO } from '../../utils/horarios';
 import "../styles/reserva.css";
 
 export default function GerenciarSolicitacoes() {
@@ -13,7 +18,7 @@ export default function GerenciarSolicitacoes() {
   const [reservasFiltradas, setReservasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [motivoRejeicao, setMotivoRejeicao] = useState("");
-  const [toasts, setToasts] = useState([]);
+  const { toasts, addToast, removeToast } = useToasts();
 
   const [modalConfig, setModalConfig] = useState({
     show: false,
@@ -30,28 +35,15 @@ export default function GerenciarSolicitacoes() {
   const [historico, setHistorico] = useState([]);
   const [loadingHistorico, setLoadingHistorico] = useState(false);
 
-  const addToast = (type, message, title = null) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, type, message, title }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
-
-  const formatarHorario = (hora) => {
-    if (!hora) return "";
-    return hora.split(":").slice(0, 2).join(":");
-  };
+  const [showContatoModal, setShowContatoModal] = useState(false);
+  const [reservaContato, setReservaContato] = useState(null);
+  const [mensagemContato, setMensagemContato] = useState('');
+  const [enviandoContato, setEnviandoContato] = useState(false);
+  const [erroContato, setErroContato] = useState('');
 
   // Data/hora de hoje, usadas para detectar reservas expiradas e reservas do dia
   const agora = new Date();
-  const hojeStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
-
-  const toDateTime = (dataISO, horaStr) => {
-    if (!dataISO || !horaStr) return null;
-    return new Date(`${dataISO}T${horaStr.slice(0, 5)}:00`);
-  };
+  const hojeStr = hojeISO();
 
   // Uma reserva pendente expira quando seu horário final já passou: nesse ponto
   // ela não pode mais acontecer, então não faz sentido continuar pedindo decisão.
@@ -62,8 +54,6 @@ export default function GerenciarSolicitacoes() {
   };
 
   const isUrgente = (reserva) => reserva.data === hojeStr;
-
-  const horariosSobrepoem = (ini1, fim1, ini2, fim2) => !(fim1 <= ini2 || ini1 >= fim2);
 
   const carregarReservas = async () => {
     try {
@@ -107,6 +97,49 @@ export default function GerenciarSolicitacoes() {
       carregarReservas();
     } catch (error) {
       addToast('error', error.response?.data?.message || 'Erro ao reverter reserva', 'Erro');
+    }
+  };
+
+  const abrirContato = (reserva) => {
+    setReservaContato(reserva);
+    setMensagemContato('');
+    setErroContato('');
+    setShowContatoModal(true);
+  };
+
+  const fecharContato = () => {
+    setShowContatoModal(false);
+    setReservaContato(null);
+    setMensagemContato('');
+    setErroContato('');
+  };
+
+  const enviarContato = async () => {
+    if (!mensagemContato.trim()) {
+      setErroContato('Escreva uma mensagem antes de enviar');
+      return;
+    }
+
+    // Abre o cliente de email do gestor já preenchido...
+    const assunto = encodeURIComponent(
+      `Sobre sua reserva — ${reservaContato.salaNome} em ${formatarData(reservaContato.data)}`
+    );
+    const corpo = encodeURIComponent(mensagemContato);
+    const mailtoUrl = `mailto:${reservaContato.usuarioEmail}?subject=${assunto}&body=${corpo}`;
+    window.open(mailtoUrl);
+
+    // ...e, em paralelo, registra/dispara o envio automático pelo sistema
+    setEnviandoContato(true);
+    try {
+      await api.post(`/reservas/${reservaContato.id}/contatar`, {
+        mensagem: mensagemContato
+      });
+      addToast('success', 'Mensagem enviada!');
+      fecharContato();
+    } catch (error) {
+      addToast('warning', 'Email aberto no seu cliente. O envio automático falhou.');
+    } finally {
+      setEnviandoContato(false);
     }
   };
 
@@ -179,12 +212,6 @@ export default function GerenciarSolicitacoes() {
       addToast('error', 'Erro ao processar solicitação', 'Erro');
       fecharModal();
     }
-  };
-
-  const formatarData = (dataISO) => {
-    if (!dataISO) return "";
-    const [ano, mes, dia] = dataISO.split("-");
-    return `${dia}/${mes}/${ano}`;
   };
 
   const calcularDuracao = (horaInicio, horaFim) => {
@@ -376,7 +403,7 @@ export default function GerenciarSolicitacoes() {
           <div className="modal-content modal-historico" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Histórico de Reservas</h3>
             <p className="modal-message">
-              Reservas já aprovadas ou rejeitadas pelo gestor.
+              Reservas já aprovadas ou rejeitadas.
             </p>
 
             {loadingHistorico ? (
@@ -424,9 +451,60 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
+      {/* MODAL DE CONTATO */}
+      {showContatoModal && reservaContato && (
+        <div className="modal-overlay" onClick={fecharContato}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Contatar solicitante</h3>
+
+            <div className="contato-destinatario">
+              Para: {reservaContato.usuarioNome} ({reservaContato.usuarioEmail})
+            </div>
+
+            <div className="contato-assunto">
+              Assunto: Sobre sua reserva — {reservaContato.salaNome} em {formatarData(reservaContato.data)}
+            </div>
+
+            <textarea
+              className="contato-textarea"
+              placeholder="Digite sua mensagem para o solicitante..."
+              value={mensagemContato}
+              onChange={(e) => {
+                setMensagemContato(e.target.value);
+                if (erroContato) setErroContato('');
+              }}
+              maxLength={500}
+              rows={5}
+            />
+            <div className="contato-contador">{mensagemContato.length}/500 caracteres</div>
+            {erroContato && <p className="error-message">{erroContato}</p>}
+
+            <div className="modal-buttons">
+              <button
+                className="modal-btn modal-btn-primary"
+                onClick={enviarContato}
+                disabled={!mensagemContato.trim() || enviandoContato}
+              >
+                {enviandoContato ? 'Enviando...' : 'Enviar por email'}
+              </button>
+              <button className="modal-btn modal-btn-secondary" onClick={fecharContato}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* CABEÇALHO */}
       <div className="page-title-container">
-        <h1 className="page-title">Gerenciar Solicitações</h1>
+        <div className="page-title-com-ajuda">
+          <h1 className="page-title">Gerenciar Solicitações</h1>
+          <BotaoAjuda
+            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_GESTOR"
+            titulo="Como gerenciar solicitações"
+            descricao="Aprenda a aprovar, rejeitar e filtrar as solicitações de reserva."
+          />
+        </div>
         <div className="page-title-acoes">
           {reservasExpiradas.length > 0 && (
             <button
@@ -441,7 +519,7 @@ export default function GerenciarSolicitacoes() {
             Histórico{historico.length > 0 ? ` [${historico.length}]` : ""}
           </button>
           <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservas, filtroData || null)}>
-            Gerar PDF
+            Gerar PDF de Ocupação
           </button>
         </div>
       </div>
@@ -576,6 +654,10 @@ export default function GerenciarSolicitacoes() {
                     <button className="btn-rejeitar" onClick={() => abrirModalConfirmacao('rejeitar', reserva)}>
                       <AiOutlineClose size={18} />
                       Rejeitar
+                    </button>
+                    <button className="btn-contatar" onClick={() => abrirContato(reserva)}>
+                      <Mail size={16} />
+                      Contatar
                     </button>
                   </div>
                 </div>

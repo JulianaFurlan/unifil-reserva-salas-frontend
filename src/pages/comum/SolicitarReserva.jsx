@@ -2,8 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import api from "../../services/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useToasts } from "../../hooks/useToasts";
 import Toast from "../../components/common/Toast";
 import CustomSelect from "../../components/common/CustomSelect";
+import BotaoAjuda from "../../components/common/BotaoAjuda";
+import { horariosSobrepoem, hojeISO } from "../../utils/horarios";
 import "../styles/reserva.css";
 
 const EMAIL_REGEX = /^[^\s@]+@unifil\.br$/;
@@ -50,10 +53,6 @@ const INITIAL_FORM_STATE = {
   observacoes: "",
 };
 
-const horariosSobrepoem = (ini1, fim1, ini2, fim2) => {
-  return !(fim1 <= ini2 || ini1 >= fim2);
-};
-
 const CHAVE_RASCUNHO = "rascunho-reserva";
 
 export default function SolicitarReserva() {
@@ -78,7 +77,7 @@ export default function SolicitarReserva() {
   const [touched, setTouched] = useState({});
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [toasts, setToasts] = useState([]);
+  const { toasts, addToast, removeToast } = useToasts();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [ultimaReserva, setUltimaReserva] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -118,17 +117,8 @@ export default function SolicitarReserva() {
 
   // Define data atual e limite máximo (1 ano)
   const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const today = hojeISO();
   const maxDateString = new Date(new Date().setFullYear(now.getFullYear() + 1)).toISOString().split("T")[0];
-
-  const addToast = (type, message, title = null) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, type, message, title }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
 
   const applyTelefoneMask = (value) => {
     const apenasNumeros = value.replace(/\D/g, "");
@@ -534,7 +524,14 @@ const handleChange = (e) => {
       )}
 
       <div className="page-title-container">
-        <h1 className="page-title">{isEditing ? "Editar Reserva" : "Solicitar Reserva"}</h1>
+        <div className="page-title-com-ajuda">
+          <h1 className="page-title">{isEditing ? "Editar Reserva" : "Solicitar Reserva"}</h1>
+          <BotaoAjuda
+            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_SOLICITAR"
+            titulo="Como solicitar uma reserva"
+            descricao="Aprenda a preencher o formulário e enviar sua solicitação de reserva de sala."
+          />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="form-container">

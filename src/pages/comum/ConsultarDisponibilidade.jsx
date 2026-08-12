@@ -3,7 +3,10 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImUsers } from "react-icons/im";
 import { useAuth } from "../../hooks/useAuth";
+import BotaoAjuda from "../../components/common/BotaoAjuda";
 import api from "../../services/api";
+import { formatarData, formatarHorario } from "../../utils/formatadores";
+import { horariosSobrepoem, hojeISO } from "../../utils/horarios";
 import "../styles/reserva.css";
 
 export default function ConsultarDisponibilidade() {
@@ -14,10 +17,7 @@ export default function ConsultarDisponibilidade() {
   const [reservas, setReservas] = useState([]);
   const [reservasPendentes, setReservasPendentes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dataSelecionada, setDataSelecionada] = useState(() => {
-    const hoje = new Date();
-    return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
-  });
+  const [dataSelecionada, setDataSelecionada] = useState(hojeISO);
 
   // filtro opcional de horário, além da data
   const [horaInicioFiltro, setHoraInicioFiltro] = useState("");
@@ -72,9 +72,6 @@ export default function ConsultarDisponibilidade() {
     return agrupado;
   }, [salas]);
 
-  // dois horários se sobrepõem quando NÃO é verdade que um termina antes do outro começar
-  const horariosSeConflitam = (ini1, fim1, ini2, fim2) => !(fim1 <= ini2 || ini1 >= fim2);
-
   const filtroHorarioAtivo = Boolean(horaInicioFiltro && horaFimFiltro);
 
   // calcula ocupacao de cada sala na data selecionada
@@ -103,7 +100,7 @@ export default function ConsultarDisponibilidade() {
           r.horaInicio <= "08:00:00" && r.horaFim >= "22:00:00"
         ),
         disponivelNoFiltro: !filtroHorarioAtivo || !aprovadasDaSala.some(r =>
-          horariosSeConflitam(horaInicioFiltro, horaFimFiltro, r.horaInicio.slice(0, 5), r.horaFim.slice(0, 5))
+          horariosSobrepoem(horaInicioFiltro, horaFimFiltro, r.horaInicio.slice(0, 5), r.horaFim.slice(0, 5))
         ),
       };
     });
@@ -132,17 +129,6 @@ export default function ConsultarDisponibilidade() {
     }
 
     return { tipo: "parcial", label: "Parcialmente ocupada", classe: "status-parcial" };
-  };
-
-  const formatarHorario = (hora) => {
-    if (!hora) return "";
-    return hora.slice(0, 5);
-  };
-
-  const formatarData = (dataISO) => {
-    if (!dataISO) return "";
-    const [ano, mes, dia] = dataISO.split("-");
-    return `${dia}/${mes}/${ano}`;
   };
 
   const calcularContadoresBloco = (salasDoBloco) => {
@@ -193,7 +179,14 @@ export default function ConsultarDisponibilidade() {
   return (
     <div className="disponibilidade-container">
       <div className="page-title-container">
-        <h1 className="page-title">Consultar Disponibilidade</h1>
+        <div className="page-title-com-ajuda">
+          <h1 className="page-title">Consultar Disponibilidade</h1>
+          <BotaoAjuda
+            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_DISPONIBILIDADE"
+            titulo="Como consultar disponibilidade"
+            descricao="Veja como verificar quais salas estão disponíveis em uma data e horário."
+          />
+        </div>
       </div>
 
       {/* filtros de data e horário */}

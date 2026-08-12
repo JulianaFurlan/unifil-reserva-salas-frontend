@@ -2,28 +2,18 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import logoUnifil from '../assets/logo-Unifil.png';
+import { formatarData, formatarHorario } from './formatadores';
 
 // Cores da UniFil
 const COR_PRIMARIA = [242, 127, 32];
-const COR_SECUNDARIA = [31, 41, 55]; 
+const COR_SECUNDARIA = [31, 41, 55];
 const COR_SUCESSO = [34, 197, 94];
 const COR_PENDENTE = [245, 158, 11];
-
-const formatarData = (dataISO) => {
-if (!dataISO) return '';
-const [ano, mes, dia] = dataISO.split('-');
-return `${dia}/${mes}/${ano}`;
-};
 
 const getDiaSemana = (dataISO) => {
 const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const data = new Date(dataISO + 'T12:00:00');
 return dias[data.getDay()];
-};
-
-const formatarHorario = (hora) => {
-if (!hora) return '';
-return hora.split(':').slice(0, 2).join(':');
 };
 
 const getLogoBase64 = async () => {
