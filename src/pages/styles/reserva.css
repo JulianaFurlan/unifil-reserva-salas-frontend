@@ -174,6 +174,12 @@
   transform: translateY(-2px);
 }
 
+.btn-enviar-reserva {
+  display: block;
+  margin: 20px auto 0;
+  border-radius: 999px;
+}
+
 .btn-confirm:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -214,6 +220,11 @@
   font-size: 12px;
   color: #9ca3af;
   margin-top: 4px;
+}
+
+.localizacao-selects-row {
+  display: flex;
+  gap: 8px;
 }
 
 /* ============================================================
@@ -888,6 +899,7 @@
 .page-title-acoes {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -1661,7 +1673,7 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .gs-modal-grid-2 {
     grid-template-columns: 1fr;
   }
@@ -1676,6 +1688,11 @@
   }
 
   .gs-stats-bar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gs-cards-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2638,7 +2655,23 @@
 /* ============================================================
    RESPONSIVIDADE
    ============================================================ */
-@media (max-width: 1100px) {
+/* Tablet: three-columns cai pra 2 colunas, two-columns continua com 2 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .three-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .salas-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gs-cards-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Mobile: todo form-row vira coluna única */
+@media (max-width: 767px) {
   .three-columns,
   .two-columns {
     grid-template-columns: 1fr;
@@ -2646,10 +2679,120 @@
 
   .page-title-container {
     margin: -20px -20px 30px -20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .form-container {
+    padding: 20px;
+  }
+
+  .time-range {
+    flex-wrap: wrap;
+  }
+
+  .localizacao-selects-row {
+    flex-direction: column;
+  }
+
+  .filtros-disponibilidade {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Tabela de usuários vira uma lista de cards: cada <tr> é um card,
+     cada <td> mostra "rótulo: valor" usando o data-label do JSX */
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table tr {
+    margin-bottom: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .admin-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: right;
+  }
+
+  .admin-table tr td:last-child {
+    border-bottom: none;
+  }
+
+  .admin-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .admin-table td.cell-acoes {
+    justify-content: flex-end;
+    background: #fafbfc;
+  }
+
+  /* Modais: largura quase total, botões empilhados ocupando 100% */
+  .modal-content {
+    width: 95%;
+    padding: 24px 20px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .modal-btn {
+    width: 100%;
+  }
+
+  .gs-modal,
+  .ajuda-modal-content {
+    width: 95%;
+  }
+
+  .gs-modal-rodape {
+    flex-direction: column-reverse;
+  }
+
+  .gs-btn-salvar,
+  .gs-btn-cancelar,
+  .gs-btn-excluir-confirmar {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Toasts sobem da parte inferior da tela em vez do canto superior direito */
+  .toast-container {
+    top: auto;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: none;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .filtros-row {
     flex-direction: column;
     align-items: stretch;
@@ -2703,10 +2846,26 @@
     width: 100%;
   }
 
-  .page-title-actions {
+  .status-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+
+  .motivo-rejeicao {
+    font-size: 11px;
+  }
+
+  .page-title-actions,
+  .page-title-acoes {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
+    width: 100%;
+  }
+
+  .page-title-acoes button {
+    width: 100%;
+    justify-content: center;
   }
 
   .admin-table {
@@ -2724,7 +2883,7 @@
   }
 
   .salas-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: 16px;
   }
 
@@ -2756,13 +2915,6 @@
 }
 
 @media (max-width: 640px) {
-  .toast-container {
-    left: 20px;
-    right: 20px;
-    max-width: none;
-    top: 10px;
-  }
-
   .toast {
     padding: 12px 16px;
   }
@@ -2782,7 +2934,6 @@
   }
 
   .salas-grid {
-    grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
 

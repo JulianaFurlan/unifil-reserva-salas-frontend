@@ -9,8 +9,15 @@ export const toDateTime = (dataISO, horaStr) => {
   return new Date(`${dataISO}T${horaStr.slice(0, 5)}:00`);
 };
 
-// Data de hoje no formato YYYY-MM-DD 
+// Data de hoje no formato YYYY-MM-DD
 export const hojeISO = () => {
   const hoje = new Date();
   return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+};
+
+export const reservaEncerradaHoje = (data, horaFim) => {
+  if (data !== hojeISO()) return false;
+  const fim = toDateTime(data, horaFim);
+  if (!fim) return false;
+  return new Date() > fim;
 };

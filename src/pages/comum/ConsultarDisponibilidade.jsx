@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 import BotaoAjuda from "../../components/common/BotaoAjuda";
 import api from "../../services/api";
 import { formatarData, formatarHorario } from "../../utils/formatadores";
-import { horariosSobrepoem, hojeISO } from "../../utils/horarios";
+import { horariosSobrepoem, hojeISO, reservaEncerradaHoje } from "../../utils/horarios";
 import "../styles/reserva.css";
 
 export default function ConsultarDisponibilidade() {
@@ -77,14 +77,17 @@ export default function ConsultarDisponibilidade() {
   // calcula ocupacao de cada sala na data selecionada
   // totalReservas/ocupacaoTotal usam só as aprovadas, pra não mudar o que getStatusSala calcula;
   // reservas (exibida nos cards) junta aprovadas + pendentes, pra gestor/admin verem as duas
+  // reservas de hoje cujo horário já passou não contam mais como ocupação
   const ocupacaoPorSala = useMemo(() => {
     const ocupacao = {};
     salas.forEach(sala => {
       const aprovadasDaSala = reservas.filter(r =>
-        r.salaId === sala.id && r.data === dataSelecionada
+        r.salaId === sala.id && r.data === dataSelecionada && !reservaEncerradaHoje(r.data, r.horaFim)
       );
       const pendentesDaSala = isGestorOuAdmin
-        ? reservasPendentes.filter(r => r.salaId === sala.id && r.data === dataSelecionada)
+        ? reservasPendentes.filter(r =>
+            r.salaId === sala.id && r.data === dataSelecionada && !reservaEncerradaHoje(r.data, r.horaFim)
+          )
         : [];
 
       const reservasParaExibir = [

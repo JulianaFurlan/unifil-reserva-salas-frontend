@@ -4,7 +4,7 @@ import { getSalas, criarSala, editarSala, alterarStatusSala, deletarSala } from 
 import api from "../../services/api";
 import Toast from "../../components/common/Toast";
 import { useToasts } from "../../hooks/useToasts";
-import { hojeISO } from "../../utils/horarios";
+import { hojeISO, reservaEncerradaHoje } from "../../utils/horarios";
 import { AiOutlinePlus, AiOutlineEdit, AiOutlineDelete, AiOutlineSwap, AiOutlineTeam } from "react-icons/ai";
 import "../styles/reserva.css";
 
@@ -123,7 +123,9 @@ export default function GerenciarSalas() {
 
   const salaOcupadaHoje = (salaId) => {
     const hoje = hojeISO();
-    return reservasAprovadas.some(r => r.salaId === salaId && r.data === hoje);
+    return reservasAprovadas.some(r =>
+      r.salaId === salaId && r.data === hoje && !reservaEncerradaHoje(r.data, r.horaFim)
+    );
   };
 
   const abrirModal = (sala = null) => {

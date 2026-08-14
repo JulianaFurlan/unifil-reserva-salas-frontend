@@ -221,182 +221,6 @@
   overflow-y: auto;
 }
 
-/* ============================================================================
-   RESPONSIVIDADE COMPLETA
-   ============================================================================ */
-
-/* Tablet (768px - 1024px) */
-@media (max-width: 1024px) {
-  .content-area {
-    padding: 24px 40px;
-  }
-  
-  .logo-image {
-    height: 70px;
-  }
-  
-  .divider {
-    font-size: 28px;
-  }
-  
-  .university-name {
-    font-size: 14px;
-  }
-  
-  .top-gray-bar {
-    height: 70px;
-    padding: 0 16px;
-  }
-}
-
-/* Mobile Grande (768px) */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 80px;
-    position: fixed;
-    left: 0;
-    top: 85px;
-    height: calc(100vh - 85px);
-    z-index: 100;
-    transform: translateX(0);
-    transition: transform 0.3s ease;
-  }
-  
-  /* Sidebar colapsada */
-  .sidebar.collapsed {
-    transform: translateX(-80px);
-  }
-  
-  .menu-item span {
-    display: none;
-  }
-  
-  .menu-item {
-    justify-content: center;
-    padding: 16px 0;
-  }
-  
-  .sidebar-header span {
-    display: none;
-  }
-  
-  .sidebar-header {
-    justify-content: center;
-    padding: 20px 0;
-  }
-  
-  .user-info-sidebar {
-    display: none;
-  }
-  
-  .logout-btn {
-    margin-left: 0;
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-  
-  .user-content {
-    justify-content: center;
-  }
-  
-  .user-avatar, .user-avatar-placeholder {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .content-area {
-    margin-left: 80px;
-    padding: 20px 24px;
-    border-radius: 0;
-  }
-  
-  .main-layout {
-    overflow: visible;
-  }
-  
-  .university-name {
-    font-size: 10px;
-    white-space: normal;
-    text-align: center;
-  }
-  
-  .logo-image {
-    height: 40px;
-  }
-  
-  .divider {
-    font-size: 20px;
-  }
-  
-  .top-gray-bar {
-    height: 60px;
-    padding: 0 12px;
-  }
-  
-  .logo-container {
-    gap: 4px;
-  }
-}
-
-/* Mobile Pequeno (480px) */
-@media (max-width: 480px) {
-  .sidebar {
-    width: 70px;
-    top: 60px;
-    height: calc(100vh - 60px);
-  }
-  
-  .sidebar.collapsed {
-    transform: translateX(-70px);
-  }
-  
-  .content-area {
-    margin-left: 70px;
-    padding: 16px;
-  }
-  
-  .menu-item svg {
-    width: 22px;
-    height: 22px;
-  }
-  
-  .user-avatar, .user-avatar-placeholder {
-    width: 35px;
-    height: 35px;
-    font-size: 16px;
-  }
-  
-  .top-gray-bar {
-    height: 50px;
-  }
-  
-  .logo-image {
-    height: 35px;
-  }
-  
-  .divider {
-    font-size: 16px;
-  }
-  
-  .university-name {
-    font-size: 8px;
-  }
-  
-  .logout-btn {
-    padding: 3px 6px;
-    font-size: 9px;
-  }
-  
-  .sidebar-header {
-    padding: 15px 0;
-  }
-  
-  .menu-item {
-    padding: 12px 0;
-  }
-}
-
-/* Botão para toggle do menu em mobile (adicione no Layout.jsx se quiser) */
 .menu-toggle {
   display: none;
   background: none;
@@ -406,10 +230,120 @@
   margin-right: auto;
 }
 
-@media (max-width: 768px) {
+.sidebar-overlay {
+  display: none;
+}
+
+/* ============================================================================
+   RESPONSIVIDADE
+   Mobile: até 767px | Tablet: 768px–1023px | Desktop: 1024px+
+   ============================================================================ */
+
+/* Notebook pequeno / tablet: só reduz o respiro, sidebar continua fixa como no desktop */
+@media (max-width: 1023px) {
+  .content-area {
+    padding: 24px 40px;
+  }
+
+  .logo-image {
+    height: 70px;
+  }
+
+  .divider {
+    font-size: 28px;
+  }
+
+  .university-name {
+    font-size: 14px;
+  }
+
+  .top-gray-bar {
+    height: 70px;
+    padding: 0 16px;
+  }
+}
+
+/* Mobile: sidebar vira um drawer que sobrepõe o conteúdo, com overlay escuro atrás */
+@media (max-width: 767px) {
   .menu-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .top-gray-bar {
+    height: 60px;
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .logo-image {
+    height: 36px;
+  }
+
+  .divider,
+  .university-name {
+    display: none;
+  }
+
+  .main-layout {
+    position: relative;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 280px;
+    max-width: 82vw;
+    height: calc(100vh - 60px);
+    z-index: 1000;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  .sidebar-header {
+    padding: 20px 24px;
+  }
+
+  .menu-item {
+    padding: 16px 24px;
+  }
+
+  .user-info-sidebar {
+    display: flex;
+  }
+
+  .content-area {
+    margin-left: 0;
+    padding: 16px;
+    border-radius: 0;
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(17, 24, 39, 0.55);
+    z-index: 999;
+    animation: layout-overlay-fade-in 0.2s ease-out;
+  }
+}
+
+@keyframes layout-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

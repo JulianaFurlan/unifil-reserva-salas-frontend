@@ -120,15 +120,15 @@ export default function GerenciarSolicitacoes() {
       return;
     }
 
-    // Abre o cliente de email do gestor já preenchido...
+    // Abre o Gmail no navegador do gestor, já com o compose preenchido...
+    const destinatario = encodeURIComponent(reservaContato.usuarioEmail);
     const assunto = encodeURIComponent(
       `Sobre sua reserva — ${reservaContato.salaNome} em ${formatarData(reservaContato.data)}`
     );
     const corpo = encodeURIComponent(mensagemContato);
-    const mailtoUrl = `mailto:${reservaContato.usuarioEmail}?subject=${assunto}&body=${corpo}`;
-    window.open(mailtoUrl);
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${destinatario}&su=${assunto}&body=${corpo}`;
+    window.open(gmailUrl, '_blank');
 
-    // ...e, em paralelo, registra/dispara o envio automático pelo sistema
     setEnviandoContato(true);
     try {
       await api.post(`/reservas/${reservaContato.id}/contatar`, {
@@ -137,7 +137,7 @@ export default function GerenciarSolicitacoes() {
       addToast('success', 'Mensagem enviada!');
       fecharContato();
     } catch (error) {
-      addToast('warning', 'Email aberto no seu cliente. O envio automático falhou.');
+      addToast('warning', 'Gmail aberto no navegador. O envio automático falhou.');
     } finally {
       setEnviandoContato(false);
     }

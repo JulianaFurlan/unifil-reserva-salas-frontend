@@ -44,6 +44,13 @@ export default function Layout() {
       </header>
 
       <div className="main-layout">
+        {menuAberto && (
+          <div
+            className="sidebar-overlay"
+            onClick={() => setMenuAberto(false)}
+          />
+        )}
+
         <aside className={`sidebar ${menuAberto ? '' : 'collapsed'}`}>
           <div className="sidebar-header">
             <span>Menu</span>

@@ -559,7 +559,7 @@ const handleChange = (e) => {
     Localização <span className="required">*</span>
   </label>
 
-  <div style={{ display: "flex", gap: "8px" }}>
+  <div className="localizacao-selects-row">
     <CustomSelect
       name="bloco"
       value={form.bloco}
@@ -667,7 +667,7 @@ const handleChange = (e) => {
           <div className="char-count">{form.observacoes.length} / 500 caracteres</div>
         </div>
 
-        <button type="submit" className="btn-confirm" disabled={loading}>
+        <button type="submit" className="btn-confirm btn-enviar-reserva" disabled={loading}>
           {loading ? "Processando..." : isEditing ? "Atualizar Reserva" : "Enviar Reserva"}
         </button>
 

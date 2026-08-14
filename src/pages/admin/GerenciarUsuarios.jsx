@@ -58,7 +58,7 @@ try {
     fecharModal();
     carregar();
     } else {
-    const res = await criarUsuario(form);
+    const res = await criarUsuario({ ...form, ativo: true });
     const senhaGerada = res.data.senha;
     fecharModal();
     carregar();
@@ -211,15 +211,15 @@ return (
             ) : (
             usuarios.map(u => (
                 <tr key={u.id} className={!u.ativo ? "linha-inativa" : ""}>
-                <td className="cell-nome">{u.nome}</td>
-                <td className="cell cell-email">{u.email}</td>
-                <td className="cell cell-departamento">{u.departamento || "—"}</td>
-                <td className="cell-perfil">
+                <td className="cell-nome" data-label="Nome">{u.nome}</td>
+                <td className="cell cell-email" data-label="Email">{u.email}</td>
+                <td className="cell cell-departamento" data-label="Departamento">{u.departamento || "—"}</td>
+                <td className="cell-perfil" data-label="Perfil">
                     <span className={`perfil-badge perfil-${u.tipo.toLowerCase()}`}>
                     {u.tipo}
                     </span>
                 </td>
-                <td className="cell-status">
+                <td className="cell-status" data-label="Status">
                     <button className={`status-badge-admin status-${u.ativo ? "ativo" : "inativo"}`} onClick={() => handleAtivo(u)}>
                     {u.ativo ? "Ativo" : "Inativo"}
                     </button>
