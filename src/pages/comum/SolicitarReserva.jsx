@@ -169,7 +169,7 @@ export default function SolicitarReserva() {
 
 // captura dados vindos da tela de disponibilidade (data, salaId, horaInicio, horaFim)
 useEffect(() => {
-  if (location.state?.data && location.state?.salaId) {
+  if (location.state?.data && location.state?.salaId && salas.length > 0) {
     const salaEncontrada = salas.find(s => s.id === location.state.salaId);
     setForm(prev => ({
       ...prev,

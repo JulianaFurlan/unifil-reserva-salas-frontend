@@ -122,7 +122,10 @@ export default function Layout() {
                 <span className="user-name">{user?.nome || 'Usuário'}</span>
                 <span className="user-role">{user?.tipo || 'COMUM'}</span>
               </div>
-              <button onClick={() => navigate('/alterar-senha')} className="alterar-senha-btn">
+              <button
+                onClick={() => navigate('/alterar-senha')}
+                className={`alterar-senha-btn ${user?.senhaTemporaria ? 'alterar-senha-btn-destaque' : ''}`}
+              >
                 <AiOutlineLock size={14} />
                 Alterar senha
               </button>
@@ -134,6 +137,22 @@ export default function Layout() {
         </aside>
 
         <main className="content-area">
+          {user?.senhaTemporaria && (
+            <div className="banner-senha-temp">
+              <AiOutlineLock size={20} className="banner-senha-temp-icone" />
+              <p className="banner-senha-temp-texto">
+                Você está usando a senha temporária gerada pelo administrador. Clique em{" "}
+                <strong>"Alterar senha"</strong> no menu lateral para definir uma senha pessoal.
+              </p>
+              <button
+                type="button"
+                className="banner-senha-temp-btn"
+                onClick={() => navigate('/alterar-senha')}
+              >
+                Alterar senha
+              </button>
+            </div>
+          )}
           <BannerPrimeiroAcesso />
           <Outlet />
         </main>

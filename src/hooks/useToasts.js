@@ -4,9 +4,10 @@ import { useState } from "react";
 export function useToasts() {
   const [toasts, setToasts] = useState([]);
 
+  // Mantém só um toast por vez: o novo substitui o anterior em vez de empilhar
   const addToast = (type, message, title = null) => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, type, message, title }]);
+    setToasts([{ id, type, message, title }]);
   };
 
   const removeToast = (id) => {

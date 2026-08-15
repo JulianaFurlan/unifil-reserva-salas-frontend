@@ -101,7 +101,9 @@ export default function AlterarSenha() {
 
         {user.senhaTemporaria === true && (
           <div className="banner-senha-temporaria">
-            Você está usando uma senha temporária. Defina uma senha pessoal para continuar.
+            Você está usando a senha aleatória que o administrador gerou pra você.
+            Preencha o formulário abaixo e clique em <strong>"Salvar nova senha"</strong> para
+            definir uma senha pessoal antes de continuar. ⬇
           </div>
         )}
 
@@ -172,7 +174,11 @@ export default function AlterarSenha() {
             </div>
           </div>
 
-          <button type="submit" className="login-btn" disabled={salvando}>
+          <button
+            type="submit"
+            className={`login-btn ${user.senhaTemporaria === true ? "login-btn-destaque" : ""}`}
+            disabled={salvando}
+          >
             {salvando ? 'Salvando...' : 'Salvar nova senha'}
           </button>
         </form>

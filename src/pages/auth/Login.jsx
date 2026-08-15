@@ -16,6 +16,10 @@ export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
+  // Único lugar que decide pra onde ir após logar — evita duas navegações
+  // concorrentes (uma daqui, outra do handleSubmit) brigando pela rota final.
+  // Sempre vai pra tela normal do perfil: quem tem senha temporária é avisado
+  // por um banner dentro do sistema, sem redirecionamento forçado.
   useEffect(() => {
     if (user) {
       if (user.tipo === 'ADMIN') {
@@ -37,14 +41,6 @@ export default function Login() {
 
     if (!result.success) {
       setError(result.message);
-      setLoading(false);
-      return;
-    }
-
-    if (result.user?.senhaTemporaria) {
-      navigate('/alterar-senha');
-      setLoading(false);
-      return;
     }
 
     setLoading(false);
@@ -109,9 +105,9 @@ export default function Login() {
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
 
-          <a href="#" className="forgot-password" onClick={(e) => e.preventDefault()}>
-            Esqueci minha senha
-          </a>
+          <p className="forgot-password">
+            Esqueceu sua senha? Contate um administrador para resetá-la.
+          </p>
         </form>
       </div>
     </div>

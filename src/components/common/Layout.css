@@ -195,6 +195,15 @@
   transform: scale(1.02);
 }
 
+.alterar-senha-btn-destaque {
+  animation: alterar-senha-pulso 1.8s ease-in-out infinite;
+}
+
+@keyframes alterar-senha-pulso {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 130, 32, 0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(245, 130, 32, 0); }
+}
+
 .logout-btn {
   background: rgba(255, 255, 255, 0.15);
   border: none;

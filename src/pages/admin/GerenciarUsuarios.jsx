@@ -15,7 +15,9 @@ const [usuarios, setUsuarios] = useState([]);
 const [loading, setLoading] = useState(true);
 const { toasts, addToast, removeToast } = useToasts();
 const [modal, setModal] = useState({ aberto: false, usuario: null });
-const [modalSenha, setModalSenha] = useState({ aberto: false, senha: "" });
+const [modalConfirmacao, setModalConfirmacao] = useState({
+    aberto: false, titulo: "", mensagem: "", onConfirmar: null
+});
 const [form, setForm] = useState(FORM_VAZIO);
 const [salvando, setSalvando] = useState(false);
 
@@ -55,15 +57,12 @@ try {
     if (modal.usuario) {
     await editarUsuario(modal.usuario.id, form);
     addToast("success", "Usuário atualizado!");
-    fecharModal();
-    carregar();
     } else {
-    const res = await criarUsuario({ ...form, ativo: true });
-    const senhaGerada = res.data.senha;
+    await criarUsuario({ ...form, ativo: true });
+    addToast("success", "Usuário cadastrado! A senha de acesso foi enviada por email.");
+    }
     fecharModal();
     carregar();
-    setModalSenha({ aberto: true, senha: senhaGerada, nome: res.data.nome });
-    }
 } catch (err) {
     addToast("error", err.response?.data?.message || "Erro ao salvar usuário");
 } finally {
@@ -71,26 +70,48 @@ try {
 }
 };
 
-const handleResetar = async (usuario) => {
-if (!window.confirm(`Resetar a senha de ${usuario.nome}?`)) return;
-try {
-    const res = await resetarSenha(usuario.id);
-    setModalSenha({ aberto: true, senha: res.data.senhaTemporaria, nome: usuario.nome });
-} catch {
-    addToast("error", "Erro ao resetar senha");
-}
+const fecharConfirmacao = () => {
+setModalConfirmacao({ aberto: false, titulo: "", mensagem: "", onConfirmar: null });
 };
 
-const handleAtivo = async (usuario) => {
+// O reset agora não devolve a senha pro admin: o próprio usuário recebe
+// a nova senha por email, então aqui só confirmamos a ação e avisamos.
+const handleResetar = (usuario) => {
+setModalConfirmacao({
+    aberto: true,
+    titulo: "Resetar senha",
+    mensagem: `Deseja resetar a senha de ${usuario.nome}? Uma nova senha será enviada por email para o usuário.`,
+    onConfirmar: async () => {
+    try {
+        await resetarSenha(usuario.id);
+        addToast("success", `Nova senha enviada por email para ${usuario.nome}.`);
+    } catch {
+        addToast("error", "Erro ao resetar senha");
+    } finally {
+        fecharConfirmacao();
+    }
+    },
+});
+};
+
+const handleAtivo = (usuario) => {
 const acao = usuario.ativo ? "desativar" : "ativar";
-if (!window.confirm(`Deseja ${acao} o usuário ${usuario.nome}?`)) return;
-try {
-    await alterarAtivo(usuario.id, !usuario.ativo);
-    addToast("success", `Usuário ${usuario.ativo ? "desativado" : "ativado"}!`);
-    carregar();
-} catch {
-    addToast("error", "Erro ao alterar status do usuário");
-}
+setModalConfirmacao({
+    aberto: true,
+    titulo: usuario.ativo ? "Desativar usuário" : "Ativar usuário",
+    mensagem: `Deseja ${acao} o usuário ${usuario.nome}?`,
+    onConfirmar: async () => {
+    try {
+        await alterarAtivo(usuario.id, !usuario.ativo);
+        addToast("success", `Usuário ${usuario.ativo ? "desativado" : "ativado"}!`);
+        carregar();
+    } catch {
+        addToast("error", "Erro ao alterar status do usuário");
+    } finally {
+        fecharConfirmacao();
+    }
+    },
+});
 };
 
 const tipoCor = (tipo) => {
@@ -107,30 +128,18 @@ return (
     ))}
     </div>
 
-    {/* MODAL SENHA TEMPORÁRIA */}
-    {modalSenha.aberto && (
-    <div className="modal-overlay" onClick={() => setModalSenha({ aberto: false, senha: "" })}>
-        <div className="modal-content modal-senha" onClick={e => e.stopPropagation()}>
-        <div className="modal-icon modal-icon-senha">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <circle cx="32" cy="32" r="30" fill="#6366f1" stroke="#4f46e5" strokeWidth="2"/>
-            <text x="32" y="40" textAnchor="middle" fill="white" fontSize="28">🔑</text>
-            </svg>
-        </div>
-        <h3 className="modal-title">Senha Temporária Gerada</h3>
-        <p className="modal-message">
-            Anote a senha de <strong>{modalSenha.nome}</strong>.<br/>
-            Ela não poderá ser visualizada novamente.
-        </p>
-        <div className="senha-temporaria">
-            {modalSenha.senha}
-        </div>
-        <p className="senha-aviso">
-            O usuário será solicitado a trocar esta senha no primeiro acesso.
-        </p>
+    {/* MODAL DE CONFIRMAÇÃO (resetar senha / ativar-desativar) */}
+    {modalConfirmacao.aberto && (
+    <div className="modal-overlay" onClick={fecharConfirmacao}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <h3 className="modal-title">{modalConfirmacao.titulo}</h3>
+        <p className="modal-message">{modalConfirmacao.mensagem}</p>
         <div className="modal-buttons">
-            <button className="modal-btn modal-btn-primary" onClick={() => setModalSenha({ aberto: false, senha: "" })}>
-            Já anotei, fechar
+            <button className="modal-btn modal-btn-primary" onClick={modalConfirmacao.onConfirmar}>
+            Confirmar
+            </button>
+            <button className="modal-btn modal-btn-secondary" onClick={fecharConfirmacao}>
+            Cancelar
             </button>
         </div>
         </div>

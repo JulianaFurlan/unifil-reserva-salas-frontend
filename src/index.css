@@ -187,20 +187,13 @@ body {
 }
 
 /* ---------- ESQUECI SENHA ---------- */
-.forgot-password {
+.login-container .forgot-password {
   display: block;
   text-align: center;
   margin-top: 24px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6C6C6C;
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.forgot-password:hover {
-  color: #f58220;
+  font-size: 0.85rem;
+  color: #9a9a9a;
+  line-height: 1.5;
 }
 
 /* ---------- ERRO ---------- */
