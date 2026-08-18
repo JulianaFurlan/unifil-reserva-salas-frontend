@@ -1,4 +1,3 @@
-// src/pages/gestor/GerenciarSolicitacoes.jsx
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
@@ -41,12 +40,10 @@ export default function GerenciarSolicitacoes() {
   const [enviandoContato, setEnviandoContato] = useState(false);
   const [erroContato, setErroContato] = useState('');
 
-  // Data/hora de hoje, usadas para detectar reservas expiradas e reservas do dia
   const agora = new Date();
   const hojeStr = hojeISO();
 
-  // Uma reserva pendente expira quando seu horário final já passou: nesse ponto
-  // ela não pode mais acontecer, então não faz sentido continuar pedindo decisão.
+  // reserva pendente expira quando o horario final ja passou
   const reservaExpirou = (data, horaFim) => {
     const fim = toDateTime(data, horaFim);
     if (!fim) return false;
@@ -120,7 +117,7 @@ export default function GerenciarSolicitacoes() {
       return;
     }
 
-    // Abre o Gmail no navegador do gestor, já com o compose preenchido...
+    // abre o gmail com o compose ja preenchido
     const destinatario = encodeURIComponent(reservaContato.usuarioEmail);
     const assunto = encodeURIComponent(
       `Sobre sua reserva — ${reservaContato.salaNome} em ${formatarData(reservaContato.data)}`
@@ -229,7 +226,7 @@ export default function GerenciarSolicitacoes() {
     return `${minutos} minutos`;
   };
 
-  // Uma reserva do histórico só pode ser revertida se o dia dela ainda não passou
+  // uma reserva do historico so pode ser revertida se o dia ainda nao passou
   const isDataPassada = (dataISO) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -239,18 +236,17 @@ export default function GerenciarSolicitacoes() {
 
   const reservasPendentesTotal = reservasFiltradas.filter(r => r.status === "PENDENTE");
 
-  // Só seguem para decisão as que ainda podem acontecer, da mais próxima para a mais distante
+  // so entram aqui as que ainda podem acontecer, da mais proxima pra mais distante
   const reservasPendentes = reservasPendentesTotal
     .filter(r => !reservaExpirou(r.data, r.horaFim))
     .sort((a, b) => toDateTime(a.data, a.horaInicio) - toDateTime(b.data, b.horaInicio));
 
-  // As que passaram do horário sem decisão ficam à parte, mais recentes primeiro
+  // as que passaram do horario sem decisao ficam separadas, mais recentes primeiro
   const reservasExpiradas = reservasPendentesTotal
     .filter(r => reservaExpirou(r.data, r.horaFim))
     .sort((a, b) => toDateTime(b.data, b.horaFim) - toDateTime(a.data, a.horaFim));
 
-  // Enquanto o modal de aprovação está aberto, verifica se a reserva já colide
-  // com outra que já foi aprovada na mesma sala, data e horário
+  // com o modal de aprovacao aberto, checa se colide com outra ja aprovada
   const conflitoAprovacao = (() => {
     if (!modalConfig.show || modalConfig.tipo !== 'aprovar' || !modalConfig.reservaInfo) return null;
     const alvo = modalConfig.reservaInfo;
@@ -273,7 +269,7 @@ export default function GerenciarSolicitacoes() {
 
   return (
     <>
-      {/* TOAST NOTIFICATIONS */}
+      {/* toasts */}
       <div className="toast-container">
         {toasts.map(toast => (
           <Toast
@@ -288,7 +284,7 @@ export default function GerenciarSolicitacoes() {
         ))}
       </div>
 
-      {/* MODAL DE CONFIRMAÇÃO */}
+      {/* modal de confirmacao */}
       {modalConfig.show && (
         <div className="modal-overlay" onClick={fecharModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -325,7 +321,7 @@ export default function GerenciarSolicitacoes() {
               </div>
             )}
 
-            {/* Campo de motivo - apenas para rejeição */}
+            {/* campo de motivo, so aparece na rejeicao */}
             {modalConfig.tipo === 'rejeitar' && (
               <div className="modal-rejeicao-container">
                 <textarea
@@ -358,7 +354,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
-      {/* MODAL DE EXPIRADAS */}
+      {/* modal de expiradas */}
       {mostrarExpiradas && (
         <div className="modal-overlay" onClick={() => setMostrarExpiradas(false)}>
           <div className="modal-content modal-expiradas" onClick={(e) => e.stopPropagation()}>
@@ -397,7 +393,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
-      {/* MODAL DE HISTÓRICO */}
+      {/* modal de historico */}
       {showHistorico && (
         <div className="modal-overlay" onClick={() => setShowHistorico(false)}>
           <div className="modal-content modal-historico" onClick={(e) => e.stopPropagation()}>
@@ -451,7 +447,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
-      {/* MODAL DE CONTATO */}
+      {/* modal de contato */}
       {showContatoModal && reservaContato && (
         <div className="modal-overlay" onClick={fecharContato}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -495,7 +491,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       )}
 
-      {/* CABEÇALHO */}
+      {/* cabecalho */}
       <div className="page-title-container">
         <div className="page-title-com-ajuda">
           <h1 className="page-title">Gerenciar Solicitações</h1>
@@ -524,7 +520,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       </div>
 
-      {/* FILTROS */}
+      {/* filtros */}
       <div className="filtros-container">
         <div className="filtros-row">
           <div className="filtro-group">
@@ -570,7 +566,7 @@ export default function GerenciarSolicitacoes() {
         </div>
       </div>
 
-      {/* LISTAGEM DE RESERVAS PENDENTES */}
+      {/* listagem de reservas pendentes */}
       {loading ? (
         <div className="loading-state">Carregando solicitações...</div>
       ) : (

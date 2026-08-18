@@ -1,4 +1,3 @@
-// src/pages/admin/GerenciarUsuarios.jsx
 import { useState, useEffect } from "react";
 import { getUsuarios, criarUsuario, editarUsuario, alterarAtivo, resetarSenha } from "../../services/adminService";
 import { useToasts } from "../../hooks/useToasts";
@@ -74,8 +73,7 @@ const fecharConfirmacao = () => {
 setModalConfirmacao({ aberto: false, titulo: "", mensagem: "", onConfirmar: null });
 };
 
-// O reset agora não devolve a senha pro admin: o próprio usuário recebe
-// a nova senha por email, então aqui só confirmamos a ação e avisamos.
+// o reset nao devolve mais a senha pro admin, o usuario recebe por email
 const handleResetar = (usuario) => {
 setModalConfirmacao({
     aberto: true,

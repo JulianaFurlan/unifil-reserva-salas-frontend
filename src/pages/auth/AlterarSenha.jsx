@@ -1,4 +1,3 @@
-// src/pages/auth/AlterarSenha.jsx
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff } from 'lucide-react';

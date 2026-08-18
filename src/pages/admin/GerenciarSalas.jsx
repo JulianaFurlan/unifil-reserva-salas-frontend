@@ -1,4 +1,3 @@
-// src/pages/admin/GerenciarSalas.jsx
 import { useState, useEffect, useMemo } from "react";
 import { getSalas, criarSala, editarSala, alterarStatusSala, deletarSala } from "../../services/adminService";
 import api from "../../services/api";
@@ -236,7 +235,7 @@ export default function GerenciarSalas() {
         ))}
       </div>
 
-      {/* MODAL DE EXCLUSÃO */}
+      {/* modal de exclusao */}
       {modalExcluir.aberto && (
         <div className="modal-overlay" onClick={fecharModalExcluir}>
           <div className="gs-modal gs-modal-pequeno" onClick={e => e.stopPropagation()}>
@@ -257,7 +256,7 @@ export default function GerenciarSalas() {
         </div>
       )}
 
-      {/* MODAL DE CADASTRO/EDIÇÃO */}
+      {/* modal de cadastro e edicao */}
       {modal.aberto && (
         <div className="modal-overlay" onClick={fecharModal}>
           <div className="gs-modal" onClick={e => e.stopPropagation()}>
@@ -355,7 +354,7 @@ export default function GerenciarSalas() {
         </div>
       )}
 
-      {/* CABEÇALHO */}
+      {/* cabecalho */}
       <div className="gs-header">
         <div className="gs-header-titulo">
           <h1>Gerenciar Salas</h1>
@@ -368,7 +367,7 @@ export default function GerenciarSalas() {
         </button>
       </div>
 
-      {/* ESTATISTICAS */}
+      {/* estatisticas */}
       <div className="gs-stats-bar">
         <div className="gs-stat-card gs-stat-card-ativa">
           <span className="gs-stat-numero">{totalAtivas}</span>
@@ -384,7 +383,7 @@ export default function GerenciarSalas() {
         </div>
       </div>
 
-      {/* BUSCA E FILTROS */}
+      {/* busca e filtros */}
       <div className="gs-search-filter-bar">
         <input
           type="text"
@@ -407,7 +406,7 @@ export default function GerenciarSalas() {
         </div>
       </div>
 
-      {/* LISTAGEM */}
+      {/* listagem */}
       {loading ? (
         <div className="gs-loading">Carregando...</div>
       ) : Object.keys(salasPorBloco).length === 0 ? (

@@ -1,4 +1,3 @@
-// src/services/api.js
 import axios from 'axios';
 
 const api = axios.create({
@@ -27,18 +26,16 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       
       try {
-        // Dispara evento de toast global
         const event = new CustomEvent("showToast", {
           detail: { type: "warning", message: mensagem, title: "Sessão Expirada" },
         });
         window.dispatchEvent(event);
-        
-        // Pequeno delay para o toast aparecer
+
+        // espera o toast aparecer antes de mandar pro login
         setTimeout(() => {
           window.location.href = '/login';
         }, 1500);
       } catch {
-        // Fallback: redireciona imediatamente
         window.location.href = '/login';
       }
     }

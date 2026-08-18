@@ -115,7 +115,7 @@ export default function SolicitarReserva() {
 
 
 
-  // Define data atual e limite máximo (1 ano)
+  // data atual e limite maximo de 1 ano
   const now = new Date();
   const today = hojeISO();
   const maxDateString = new Date(new Date().setFullYear(now.getFullYear() + 1)).toISOString().split("T")[0];
@@ -167,7 +167,7 @@ export default function SolicitarReserva() {
   return resultado;
 }, [form.data, form.horaInicio, form.horaFim, reservas, editingId, isEditing]);
 
-// captura dados vindos da tela de disponibilidade (data, salaId, horaInicio, horaFim)
+// captura os dados vindos da tela de disponibilidade
 useEffect(() => {
   if (location.state?.data && location.state?.salaId && salas.length > 0) {
     const salaEncontrada = salas.find(s => s.id === location.state.salaId);
@@ -195,7 +195,7 @@ useEffect(() => {
     }
   }, [form.salaId]);
 
-  //Caso o usuario coloque uma sala e depois muda o dia para uma aprovada
+  // se o usuario ja tinha escolhido a sala e ela ficou reservada nesse horario
   useEffect(() => {
     if (form.salaId && salasAprovadas[form.salaId]) {
       setForm(prev => ({ ...prev, salaId: "" }));
@@ -248,7 +248,7 @@ useEffect(() => {
     }
   }, [location, navigate]);
 
-  //Só libera a seleção de bloco e sala se data, horaInicio e horaFim forem válidos
+  // so libera bloco e sala se data, horaInicio e horaFim forem validos
   const localizacaoLiberada = useMemo(() => {
     if (!form.data || !form.horaInicio || !form.horaFim) return false;
     
@@ -358,11 +358,10 @@ const handleChange = (e) => {
     setErrors(prev => ({ ...prev, salaId: undefined }));
   }
 
-  // Atualiza o form primeiro
   setForm(prev => {
     const novoForm = { ...prev, [name]: value };
 
-    // Revalida horaFim quando horaInicio muda e vice-versa
+    // revalida horaFim quando horaInicio muda e vice-versa
     if (name === "horaInicio" || name === "horaFim") {
       const inicio = name === "horaInicio" ? value : prev.horaInicio;
       const fim = name === "horaFim" ? value : prev.horaFim;
@@ -590,7 +589,7 @@ const handleChange = (e) => {
     />
   </div>
 
-  {/* Hint embaixo dos selects, não dentro do label */}
+  {/* hint fica embaixo dos selects, nao dentro do label */}
   {!localizacaoLiberada && (
     <p className="campo-hint">Preencha data e horário válidos primeiro</p>
   )}

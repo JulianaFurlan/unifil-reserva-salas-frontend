@@ -1,10 +1,9 @@
-// src/utils/pdfGenerator.js
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import logoUnifil from '../assets/logo-Unifil.png';
 import { formatarData, formatarHorario } from './formatadores';
 
-// Cores da UniFil
+// cores da unifil
 const COR_PRIMARIA = [242, 127, 32];
 const COR_SECUNDARIA = [31, 41, 55];
 const COR_SUCESSO = [34, 197, 94];
@@ -34,7 +33,7 @@ export async function gerarPdfOcupacao(reservas, filtroData = null) {
 const doc = new jsPDF();
 const logo = await getLogoBase64();
 
-// ==================== CABEÇALHO ====================
+// cabecalho
 if (logo) {
 doc.addImage(logo, 'PNG', 14, 8, 50, 20);
 doc.setFontSize(16);
@@ -64,7 +63,7 @@ const periodo = filtroData
 doc.text(periodo, 14, 40);
 doc.setTextColor(0, 0, 0);
 
-// ==================== FILTROS ====================
+// filtros
 let reservasFiltradas = reservas.filter(r =>
 r.status === 'APROVADO' || r.status === 'PENDENTE'
 );
@@ -87,7 +86,7 @@ doc.save('mapa-ocupacao.pdf');
 return;
 }
 
-// ==================== AGRUPAR POR DATA ====================
+// agrupar por data
 const porData = {};
 reservasFiltradas.forEach(r => {
 if (!porData[r.data]) porData[r.data] = [];
@@ -97,7 +96,7 @@ porData[r.data].push(r);
 let posY = 48;
 
 for (const [data, reservasDia] of Object.entries(porData)) {
-// Título da data
+// titulo da data
 doc.setFillColor(COR_PRIMARIA[0], COR_PRIMARIA[1], COR_PRIMARIA[2]);
 doc.rect(14, posY, 182, 9, 'F');
 doc.setFontSize(11);
@@ -107,7 +106,7 @@ doc.text(`${getDiaSemana(data)}, ${formatarData(data)}`, 16, posY + 6.5);
 posY += 11;
 doc.setTextColor(0, 0, 0);
 
-// Construir linhas da tabela
+// linhas da tabela
 const linhas = reservasDia.map(r => [
     r.salaNome || '—',
     `${formatarHorario(r.horaInicio)} – ${formatarHorario(r.horaFim)}`,
@@ -142,7 +141,7 @@ autoTable(doc, {
     5: { cellWidth: 22, halign: 'center' },
     },
     didDrawCell: (data) => {
-    // Cor da célula de status
+    // cor da celula de status
     if (data.section === 'body' && data.column.index === 5) {
         const status = data.cell.raw;
         if (status === 'Aprovada') {
@@ -166,14 +165,14 @@ autoTable(doc, {
 
 posY = doc.lastAutoTable.finalY + 12;
 
-// Nova página se necessário
+// pula pra proxima pagina se nao couber
 if (posY > 260) {
     doc.addPage();
     posY = 20;
 }
 }
 
-// ==================== RODAPÉ ====================
+// rodape
 const totalPages = doc.internal.getNumberOfPages();
 for (let i = 1; i <= totalPages; i++) {
 doc.setPage(i);
@@ -186,7 +185,7 @@ doc.text(
     doc.internal.pageSize.height - 10
 );
 
-// Linha decorativa no rodapé
+// linha decorativa no rodape
 doc.setDrawColor(COR_PRIMARIA[0], COR_PRIMARIA[1], COR_PRIMARIA[2]);
 doc.setLineWidth(0.5);
 doc.line(14, doc.internal.pageSize.height - 14, 196, doc.internal.pageSize.height - 14);

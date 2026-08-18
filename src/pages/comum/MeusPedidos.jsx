@@ -38,7 +38,6 @@ const [showCancelConfirmation, setShowCancelConfirmation] = useState(null);
     carregarReservas();
   }, []);
 
-  // Verifica se o horário de FIM da reserva já passou em relação ao momento atual
   const reservaExpirou = (data, horaFim) => {
     const fimReserva = toDateTime(data, horaFim);
     if (!fimReserva) return false;
@@ -46,14 +45,12 @@ const [showCancelConfirmation, setShowCancelConfirmation] = useState(null);
   };
 
   const getStatusCategoria = (status, data, horaFim) => {
-    // Cancelado e rejeitado sempre vão para finalizadas, independente da data
+    // cancelado e rejeitado sempre vao pra finalizadas
     if (status === 'CANCELADO') return 'finalizada';
     if (status === 'REJEITADO') return 'finalizada';
 
-    // Se o horário de fim já passou, é finalizada independente do status
     if (reservaExpirou(data, horaFim)) return 'finalizada';
 
-    // Horário ainda não passou: classifica pelo status
     if (status === 'APROVADO') return 'aprovada';
     return 'analise';
   };
@@ -221,7 +218,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
       ) : (
         <div className="solicitacoes-container">
 
-          {/* SEÇÃO: SOLICITAÇÕES EM ANÁLISE */}
+          {/* solicitacoes em analise */}
           <div className="solicitacao-card">
             <div className="card-header analise-header">
               <h2>Solicitações em análise</h2>
@@ -262,7 +259,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
             </div>
           </div>
 
-          {/* SEÇÃO: RESERVAS APROVADAS */}
+          {/* reservas aprovadas */}
           <div className="solicitacao-card">
             <div className="card-header aprovada-header">
               <h2>Reservas aprovadas</h2>
@@ -301,7 +298,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
             </div>
           </div>
 
-          {/* SEÇÃO: RESERVAS FINALIZADAS */}
+          {/* reservas finalizadas */}
         <div className="solicitacao-card">
           <div className="card-header finalizada-header">
             <h2>Reservas finalizadas</h2>

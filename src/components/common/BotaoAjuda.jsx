@@ -1,4 +1,3 @@
-// src/components/common/BotaoAjuda.jsx
 import { useState, useEffect } from "react";
 import { HelpCircle, X } from "lucide-react";
 

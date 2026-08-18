@@ -1,4 +1,3 @@
-// src/components/common/BannerPrimeiroAcesso.jsx
 import { useState, useEffect } from "react";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 

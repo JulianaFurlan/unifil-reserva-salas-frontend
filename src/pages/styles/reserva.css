@@ -1,13 +1,13 @@
-/* RESERVA DE SALAS UNIFIL - ESTILOS GLOBAIS */
+/* estilos globais do sistema de reservas da unifil */
 
-/*RESET E CONFIGURACOES GLOBAIS*/
+/* reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/*LAYOUT GERAL*/
+/* layout geral */
 .content {
   flex: 1;
   background: #f8f9fa;
@@ -15,7 +15,7 @@
   overflow-y: auto;
 }
 
-/*CABECALHO DAS PAGINAS*/
+/* cabecalho das paginas */
 .page-title-container {
   padding: 20px 30px;
   margin: -20px -40px 30px -40px;
@@ -44,9 +44,7 @@
   align-items: center;
 }
 
-/* ============================================================
-   TELA SOLICITAR RESERVA
-   ============================================================ */
+/* tela solicitar reserva */
 .form-container {
   max-width: 100%;
   background: white;
@@ -221,9 +219,7 @@
   gap: 8px;
 }
 
-/* ============================================================
-   TELA MEUS PEDIDOS
-   ============================================================ */
+/* tela meus pedidos */
 .solicitacoes-container {
   display: flex;
   flex-direction: column;
@@ -466,9 +462,7 @@
   font-size: 14px;
 }
 
-/* ============================================================
-   TELA GERENCIAR SOLICITACOES
-   ============================================================ */
+/* tela gerenciar solicitacoes */
 .filtros-container {
   background: white;
   border-radius: 16px;
@@ -1072,11 +1066,7 @@
   color: #94a3b8;
 }
 
-/* ============================================================
-   TELA ALTERAR SENHA
-   Reaproveita as classes de login.css; só o que é exclusivo daqui
-   entra com o prefixo "as-".
-   ============================================================ */
+/* tela alterar senha, reaproveita classes do login.css, prefixo as- e o que for so daqui */
 
 .banner-senha-temporaria {
   width: 100%;
@@ -1092,7 +1082,7 @@
   text-align: center;
 }
 
-/* Chama atenção pro botão de salvar quando a senha ainda é a temporária */
+/* pisca o botao de salvar quando a senha ainda e temporaria */
 .login-btn-destaque {
   animation: login-btn-pulso 1.8s ease-in-out infinite;
 }
@@ -1125,10 +1115,7 @@
   color: #f58220;
 }
 
-/* ============================================================
-   TELA GERENCIAR SALAS
-   Sistema isolado (prefixo gs-), não compartilhado com outras telas.
-   ============================================================ */
+/* tela gerenciar salas, prefixo gs-, nao compartilha classe com as outras telas */
 
 .gs-container {
   padding: 0;
@@ -1681,6 +1668,7 @@
   cursor: not-allowed;
 }
 
+/* celular, ate 767px, gerenciar salas */
 @media (max-width: 767px) {
   .gs-modal-grid-2 {
     grid-template-columns: 1fr;
@@ -1709,9 +1697,7 @@
   }
 }
 
-/* ============================================================
-   COMPONENTES DE TABELA (GERENCIAR USUARIOS)
-   ============================================================ */
+/* tabela da tela gerenciar usuarios */
 
 .cartao-tabela {
   background: white;
@@ -1789,9 +1775,7 @@
   transition: all 0.2s;
 }
 
-/* ============================================================
-   TELA GERENCIAR USUARIOS
-   ============================================================ */
+/* tela gerenciar usuarios */
 
 .status-ativo {
   background: #dcfce7;
@@ -1851,9 +1835,7 @@
   color: #d97706;
 }
 
-/* ============================================================
-   TELA CONSULTAR DISPONIBILIDADE
-   ============================================================ */
+/* tela consultar disponibilidade */
 .disponibilidade-container {
   padding: 0;
 }
@@ -2224,9 +2206,7 @@
   color: #6b7280;
 }
 
-/* ============================================================
-   TOAST NOTIFICATIONS
-   ============================================================ */
+/* toasts de notificacao */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -2377,9 +2357,7 @@
   }
 }
 
-/* ============================================================
-   MODAIS GERAIS
-   ============================================================ */
+/* modais gerais */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2603,9 +2581,7 @@
   color: #b91c1c;
 }
 
-/* ============================================================
-   TABELA PADRAO
-   ============================================================ */
+/* tabela padrao */
 .table-container {
   margin-top: 30px;
   overflow-x: auto;
@@ -2664,10 +2640,9 @@
   color: #9ca3af;
 }
 
-/* ============================================================
-   RESPONSIVIDADE
-   ============================================================ */
-/* Tablet: three-columns cai pra 2 colunas, two-columns continua com 2 */
+/* responsividade */
+
+/* tablet, de 768px a 1023px, three-columns cai pra 2 colunas */
 @media (min-width: 768px) and (max-width: 1023px) {
   .three-columns {
     grid-template-columns: 1fr 1fr;
@@ -2682,7 +2657,7 @@
   }
 }
 
-/* Mobile: todo form-row vira coluna única */
+/* celular, ate 767px, formulario, tabela de usuarios, modais e toasts */
 @media (max-width: 767px) {
   .three-columns,
   .two-columns {
@@ -2719,8 +2694,7 @@
     align-items: stretch;
   }
 
-  /* Tabela de usuários vira uma lista de cards: cada <tr> é um card,
-     cada <td> mostra "rótulo: valor" usando o data-label do JSX */
+  /* cada tr vira um card e cada td mostra o data-label do jsx como rotulo */
   .admin-table thead {
     display: none;
   }
@@ -2770,7 +2744,7 @@
     background: #fafbfc;
   }
 
-  /* Modais: largura quase total, botões empilhados ocupando 100% */
+  /* modais ocupam quase a tela toda e os botoes empilham */
   .modal-content {
     width: 95%;
     padding: 24px 20px;
@@ -2800,7 +2774,7 @@
     text-align: center;
   }
 
-  /* Toasts sobem da parte inferior da tela em vez do canto superior direito */
+  /* toast sobe da parte de baixo da tela em vez do canto superior direito */
   .toast-container {
     top: auto;
     bottom: 16px;
@@ -2827,6 +2801,7 @@
   }
 }
 
+/* celular, ate 767px, gerenciar solicitacoes e salas disponiveis */
 @media (max-width: 767px) {
   .filtros-row {
     flex-direction: column;
@@ -2949,6 +2924,7 @@
   }
 }
 
+/* telas bem pequenas, ate 640px */
 @media (max-width: 640px) {
   .toast {
     padding: 12px 16px;
@@ -3012,9 +2988,7 @@
   }
 }
 
-/* ============================================================
-   BOTAO DE AJUDA / TUTORIAIS EM VIDEO
-   ============================================================ */
+/* botao de ajuda e tutoriais em video */
 
 .btn-ajuda {
   display: inline-flex;
@@ -3120,9 +3094,7 @@
   border: none;
 }
 
-/* ============================================================
-   BANNER DE SENHA TEMPORÁRIA
-   ============================================================ */
+/* banner de senha temporaria */
 
 .banner-senha-temp {
   display: flex;
@@ -3168,6 +3140,7 @@
   transform: translateY(-1px);
 }
 
+/* celular */
 @media (max-width: 640px) {
   .banner-senha-temp {
     flex-direction: column;
@@ -3179,9 +3152,7 @@
   }
 }
 
-/* ============================================================
-   BANNER DE PRIMEIRO ACESSO
-   ============================================================ */
+/* banner de primeiro acesso */
 
 .banner-primeiro-acesso {
   background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
@@ -3254,6 +3225,7 @@
   }
 }
 
+/* celular */
 @media (max-width: 640px) {
   .ajuda-modal-content {
     padding: 18px;

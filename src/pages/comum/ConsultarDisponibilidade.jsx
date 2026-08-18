@@ -1,4 +1,3 @@
-// src/pages/comum/ConsultarDisponibilidade.jsx
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImUsers } from "react-icons/im";
@@ -34,7 +33,7 @@ export default function ConsultarDisponibilidade() {
 
   const isGestorOuAdmin = user?.tipo === 'GESTOR' || user?.tipo === 'ADMIN';
 
-  // carrega salas e reservas (gestor/admin também carregam as pendentes, para exibir nos cards)
+  // gestor e admin tambem carregam as pendentes pra exibir nos cards
   useEffect(() => {
     const carregarDados = async () => {
       try {
@@ -74,10 +73,7 @@ export default function ConsultarDisponibilidade() {
 
   const filtroHorarioAtivo = Boolean(horaInicioFiltro && horaFimFiltro);
 
-  // calcula ocupacao de cada sala na data selecionada
-  // totalReservas/ocupacaoTotal usam só as aprovadas, pra não mudar o que getStatusSala calcula;
-  // reservas (exibida nos cards) junta aprovadas + pendentes, pra gestor/admin verem as duas
-  // reservas de hoje cujo horário já passou não contam mais como ocupação
+  // totalReservas/ocupacaoTotal usam so as aprovadas, reservas junta aprovadas + pendentes
   const ocupacaoPorSala = useMemo(() => {
     const ocupacao = {};
     salas.forEach(sala => {
@@ -110,7 +106,6 @@ export default function ConsultarDisponibilidade() {
     return ocupacao;
   }, [salas, reservas, reservasPendentes, isGestorOuAdmin, dataSelecionada, filtroHorarioAtivo, horaInicioFiltro, horaFimFiltro]);
 
-  // determina status da sala
   const getStatusSala = (salaId) => {
     const sala = salas.find(s => s.id === salaId);
     const ocupacao = ocupacaoPorSala[salaId];

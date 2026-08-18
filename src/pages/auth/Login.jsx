@@ -1,4 +1,3 @@
-// src/pages/auth/Login.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -16,10 +15,7 @@ export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
-  // Único lugar que decide pra onde ir após logar — evita duas navegações
-  // concorrentes (uma daqui, outra do handleSubmit) brigando pela rota final.
-  // Sempre vai pra tela normal do perfil: quem tem senha temporária é avisado
-  // por um banner dentro do sistema, sem redirecionamento forçado.
+  // unico lugar que decide a rota pos login, pra nao ter duas navegacoes brigando
   useEffect(() => {
     if (user) {
       if (user.tipo === 'ADMIN') {
