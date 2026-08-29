@@ -1,7 +1,6 @@
-import { createContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
-
-export const AuthContext = createContext({});
+import { AuthContext } from './authContextObject';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -16,7 +15,7 @@ export function AuthProvider({ children }) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         api.defaults.headers.Authorization = `Bearer ${token}`;
-      } catch (error) {
+      } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
@@ -36,7 +35,7 @@ export function AuthProvider({ children }) {
       
       return { success: true, user: usuario };
     } catch (error) {
-      return { success: false, message: 'Email ou senha inválidos' };
+      return { success: false, message: error.response?.data?.message || 'Email ou senha inválidos' };
     }
   };
 

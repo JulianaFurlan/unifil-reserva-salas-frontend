@@ -15,6 +15,15 @@ export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
+  // mostra o aviso de sessao expirada guardado pelo interceptor da api, se tiver
+  useEffect(() => {
+    const mensagemLogin = sessionStorage.getItem('mensagemLogin');
+    if (mensagemLogin) {
+      setError(mensagemLogin);
+      sessionStorage.removeItem('mensagemLogin');
+    }
+  }, []);
+
   // unico lugar que decide a rota pos login, pra nao ter duas navegacoes brigando
   useEffect(() => {
     if (user) {

@@ -7,6 +7,7 @@ import Toast from "../../components/common/Toast";
 import CustomSelect from "../../components/common/CustomSelect";
 import BotaoAjuda from "../../components/common/BotaoAjuda";
 import { horariosSobrepoem, hojeISO } from "../../utils/horarios";
+import { formatarData, formatarHorario } from "../../utils/formatadores";
 import "../styles/reserva.css";
 
 const EMAIL_REGEX = /^[^\s@]+@unifil\.br$/;
@@ -216,14 +217,14 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    if (location.state?.editando && location.state?.reservaData) {
+    if (location.state?.editando && location.state?.reservaData && salas.length > 0) {
       const reserva = location.state.reservaData;
       setIsEditing(true);
       setEditingId(reserva.id);
 
       let blocoEncontrado = "";
-      for (const [bloco, salas] of Object.entries(salasPorBloco)) {
-        if (salas.includes(reserva.salaId)) {
+      for (const [bloco, salasDoBloco] of Object.entries(salasPorBloco)) {
+        if (salasDoBloco.some(s => s.id === reserva.salaId)) {
           blocoEncontrado = bloco;
           break;
         }
@@ -246,7 +247,7 @@ useEffect(() => {
 
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location, navigate]);
+  }, [location, navigate, salas]);
 
   // so libera bloco e sala se data, horaInicio e horaFim forem validos
   const localizacaoLiberada = useMemo(() => {
@@ -463,10 +464,15 @@ const handleChange = (e) => {
         addToast("success", "Reserva atualizada e voltou para análise!", "Atualizado");
         setTimeout(() => navigate("/meus-pedidos"), 1500);
       } else {
-        const response = await api.post("/reservas", reservaParaEnviar);
+        await api.post("/reservas", reservaParaEnviar);
         sessionStorage.removeItem(CHAVE_RASCUNHO);
         addToast("success", "Reserva criada com sucesso!", "Confirmado");
-        setUltimaReserva(response.data);
+        setUltimaReserva({
+          salaNome: salas.find(s => s.id === form.salaId)?.nome,
+          data: form.data,
+          horaInicio: form.horaInicio,
+          horaFim: form.horaFim,
+        });
         setShowSuccessModal(true);
         setForm(INITIAL_FORM_STATE);
         setErrors({});
@@ -510,6 +516,22 @@ const handleChange = (e) => {
             </div>
             <h3 className="modal-title">Reserva Solicitada!</h3>
             <p className="modal-message">Sua solicitação foi criada com sucesso.</p>
+            {ultimaReserva && (
+              <div style={{
+                background: "#f9fafb",
+                borderRadius: "12px",
+                padding: "14px 16px",
+                marginBottom: "16px",
+                textAlign: "left",
+              }}>
+                <div style={{ fontWeight: "700", fontSize: "15px", marginBottom: "4px" }}>
+                  {ultimaReserva.salaNome}
+                </div>
+                <div style={{ fontSize: "13px", color: "#6b7280" }}>
+                  {formatarData(ultimaReserva.data)} · {formatarHorario(ultimaReserva.horaInicio)}–{formatarHorario(ultimaReserva.horaFim)}
+                </div>
+              </div>
+            )}
             <div className="modal-buttons">
               <button className="modal-btn modal-btn-primary" onClick={() => { setShowSuccessModal(false); navigate("/meus-pedidos"); }}>
                 Ver minhas reservas
@@ -562,8 +584,8 @@ const handleChange = (e) => {
     <CustomSelect
       name="bloco"
       value={form.bloco}
-      disabled={!localizacaoLiberada}
-      placeholder={!localizacaoLiberada ? "Aguarde..." : "Bloco"}
+      disabled={!localizacaoLiberada || carregandoSalas}
+      placeholder={carregandoSalas ? "Carregando salas..." : !localizacaoLiberada ? "Aguarde..." : "Bloco"}
       onChange={(e) => {
         setForm(prev => ({ ...prev, bloco: e.target.value, salaId: "" }));
       }}
@@ -575,8 +597,8 @@ const handleChange = (e) => {
       name="salaId"
       value={form.salaId}
       onChange={handleChange}
-      disabled={!localizacaoLiberada || !form.bloco}
-      placeholder={!localizacaoLiberada ? "Aguarde..." : form.bloco ? "Selecione a sala..." : "Sala"}
+      disabled={!localizacaoLiberada || carregandoSalas || !form.bloco}
+      placeholder={carregandoSalas ? "Carregando salas..." : !localizacaoLiberada ? "Aguarde..." : form.bloco ? "Selecione a sala..." : "Sala"}
       options={(salasPorBloco[form.bloco] || []).map(sala => {
         const bloqueio = salasAprovadas[sala.id];
         return {
@@ -595,7 +617,7 @@ const handleChange = (e) => {
   )}
 
   {form.bloco && localizacaoLiberada &&
-    Object.keys(salasAprovadas).some(s => salasPorBloco[form.bloco]?.includes(s)) && (
+    (salasPorBloco[form.bloco] || []).some(sala => salasAprovadas[sala.id]) && (
     <p className="info-message">
       Algumas salas estão reservadas nesse horário e não podem ser selecionadas.
     </p>

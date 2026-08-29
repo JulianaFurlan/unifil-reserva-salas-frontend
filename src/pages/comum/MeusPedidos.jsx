@@ -92,7 +92,7 @@ const cancelarReserva = (reserva) => {
     addToast('success', 'Reserva cancelada com sucesso!');
     carregarReservas();
   } catch (error) {
-    addToast('error', 'Erro ao cancelar reserva');
+    addToast('error', error.response?.data?.message || 'Erro ao cancelar reserva');
   } finally {
     setShowCancelConfirmation(false);
     setReservaSelecionada(null);

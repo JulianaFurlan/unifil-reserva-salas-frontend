@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import api from "../../services/api";
-import { useAuth } from "../../hooks/useAuth";
 import { useToasts } from "../../hooks/useToasts";
 import Toast from "../../components/common/Toast";
 import BotaoAjuda from "../../components/common/BotaoAjuda";
@@ -17,7 +16,6 @@ const LABEL_STATUS_SALA = {
 };
 
 export default function GerenciarSolicitacoes() {
-  const { user } = useAuth();
   const [reservas, setReservas] = useState([]);
   const [salas, setSalas] = useState([]);
   const [reservasFiltradas, setReservasFiltradas] = useState([]);
@@ -64,7 +62,7 @@ export default function GerenciarSolicitacoes() {
       const response = await api.get("/reservas/todas");
       setReservas(response.data);
       setReservasFiltradas(response.data);
-    } catch (error) {
+    } catch {
       addToast('error', 'Erro ao carregar reservas');
     } finally {
       setLoading(false);
@@ -95,7 +93,7 @@ export default function GerenciarSolicitacoes() {
       setLoadingHistorico(true);
       const response = await api.get("/reservas/historico");
       setHistorico(response.data);
-    } catch (error) {
+    } catch {
       addToast('error', 'Erro ao carregar histórico');
     } finally {
       setLoadingHistorico(false);
@@ -154,7 +152,7 @@ export default function GerenciarSolicitacoes() {
       });
       addToast('success', 'Mensagem enviada!');
       fecharContato();
-    } catch (error) {
+    } catch {
       addToast('warning', 'Gmail aberto no navegador. O envio automático falhou.');
     } finally {
       setEnviandoContato(false);
@@ -226,7 +224,7 @@ export default function GerenciarSolicitacoes() {
       }
       carregarReservas();
       fecharModal();
-    } catch (error) {
+    } catch {
       addToast('error', 'Erro ao processar solicitação', 'Erro');
       fecharModal();
     }

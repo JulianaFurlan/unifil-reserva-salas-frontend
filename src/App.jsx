@@ -24,7 +24,13 @@ function App() {
             <Route path="/solicitar-reserva" element={<SolicitarReserva />} />
             <Route path="/meus-pedidos" element={<MeusPedidos />} />
             <Route path="/consultar-disponibilidade" element={<ConsultarDisponibilidade />} />
+          </Route>
+
+          <Route element={<ProtectedRoute roles={['GESTOR', 'ADMIN']}><Layout /></ProtectedRoute>}>
             <Route path="/gestor/solicitacoes" element={<GerenciarSolicitacoes />} />
+          </Route>
+
+          <Route element={<ProtectedRoute roles={['ADMIN']}><Layout /></ProtectedRoute>}>
             <Route path="/admin/salas" element={<GerenciarSalas />} />
             <Route path="/admin/usuarios" element={<GerenciarUsuarios />} />
           </Route>

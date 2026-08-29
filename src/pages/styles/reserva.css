@@ -1399,11 +1399,6 @@
   gap: 6px;
 }
 
-.gs-btn-status {
-  flex: none;
-  width: 100%;
-}
-
 .gs-btn-acao {
   flex: 1;
   min-width: 0;
@@ -1446,6 +1441,8 @@
 }
 
 .gs-btn-status {
+  flex: none;
+  width: 100%;
   border-color: #bfdbfe;
 }
 

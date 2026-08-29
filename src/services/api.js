@@ -21,23 +21,14 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const mensagem = error.response?.data?.message || "Sua sessão expirou. Faça login novamente.";
-      
+
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
-      try {
-        const event = new CustomEvent("showToast", {
-          detail: { type: "warning", message: mensagem, title: "Sessão Expirada" },
-        });
-        window.dispatchEvent(event);
 
-        // espera o toast aparecer antes de mandar pro login
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1500);
-      } catch {
-        window.location.href = '/login';
-      }
+      // a pagina de login le essa mensagem no proprio mount, ja que o
+      // redirecionamento troca a pagina antes de qualquer toast poder aparecer aqui
+      sessionStorage.setItem('mensagemLogin', mensagem);
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

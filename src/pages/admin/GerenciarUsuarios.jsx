@@ -141,12 +141,6 @@ try {
 }
 };
 
-const tipoCor = (tipo) => {
-if (tipo === "ADMIN") return { bg: "#ede9fe", color: "#7c3aed" };
-if (tipo === "GESTOR") return { bg: "#dbeafe", color: "#1d4ed8" };
-return { bg: "#f3f4f6", color: "#374151" };
-};
-
 return (
 <>
     <div className="toast-container">
