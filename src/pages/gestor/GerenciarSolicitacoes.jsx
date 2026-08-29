@@ -11,9 +11,15 @@ import { formatarData, formatarHorario } from '../../utils/formatadores';
 import { horariosSobrepoem, toDateTime, hojeISO } from '../../utils/horarios';
 import "../styles/reserva.css";
 
+const LABEL_STATUS_SALA = {
+  MANUTENCAO: "Em manutenção",
+  INATIVA: "Inativa",
+};
+
 export default function GerenciarSolicitacoes() {
   const { user } = useAuth();
   const [reservas, setReservas] = useState([]);
+  const [salas, setSalas] = useState([]);
   const [reservasFiltradas, setReservasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [motivoRejeicao, setMotivoRejeicao] = useState("");
@@ -68,6 +74,21 @@ export default function GerenciarSolicitacoes() {
   useEffect(() => {
     carregarReservas();
   }, []);
+
+  const carregarSalas = async () => {
+    try {
+      const response = await api.get("/salas");
+      setSalas(response.data);
+    } catch {
+      // status da sala e so um extra visual no card, sem toast se falhar
+    }
+  };
+
+  useEffect(() => {
+    carregarSalas();
+  }, []);
+
+  const statusDaSala = (salaId) => salas.find(s => s.id === salaId)?.status;
 
   const carregarHistorico = async () => {
     try {
@@ -496,7 +517,7 @@ export default function GerenciarSolicitacoes() {
         <div className="page-title-com-ajuda">
           <h1 className="page-title">Gerenciar Solicitações</h1>
           <BotaoAjuda
-            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_GESTOR"
+            videoUrl="https://youtu.be/MI23C7k_jAk"
             titulo="Como gerenciar solicitações"
             descricao="Aprenda a aprovar, rejeitar e filtrar as solicitações de reserva."
           />
@@ -578,12 +599,19 @@ export default function GerenciarSolicitacoes() {
             </div>
           ) : (
             <div className="cards-gestor">
-              {reservasPendentes.map(reserva => (
+              {reservasPendentes.map(reserva => {
+                const statusSala = statusDaSala(reserva.salaId);
+                return (
                 <div key={reserva.id} className={`card-solicitacao ${isUrgente(reserva) ? "card-urgente" : ""}`}>
                   <div className="card-header-gestor">
                     <div className="card-titulo">
                       <h3>
                         {reserva.salaNome || "Sala não encontrada"}
+                        {statusSala && statusSala !== "ATIVA" && (
+                          <span className={`card-sala-status card-sala-status-${statusSala.toLowerCase()}`}>
+                            {LABEL_STATUS_SALA[statusSala] || statusSala}
+                          </span>
+                        )}
                         {isUrgente(reserva) && <span className="badge-urgente">⚠ Hoje</span>}
                       </h3>
                       <span className="card-data">{formatarData(reserva.data)}</span>
@@ -657,7 +685,8 @@ export default function GerenciarSolicitacoes() {
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

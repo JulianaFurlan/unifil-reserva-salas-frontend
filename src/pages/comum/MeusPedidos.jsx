@@ -206,7 +206,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
         <div className="page-title-com-ajuda">
           <h1 className="page-title">Minhas Solicitações</h1>
           <BotaoAjuda
-            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_PEDIDOS"
+            videoUrl="https://youtu.be/Ftaq7MlMh1w"
             titulo="Como acompanhar meus pedidos"
             descricao="Veja como acompanhar o status das suas reservas e cancelar se necessário."
           />
@@ -313,7 +313,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
                   <div key={reserva.id} className="solicitacao-item finalizado">
                     <div className="solicitacao-info">
                       <div className="solicitacao-titulo">
-                        <strong>{reserva.salaNome?.nome || 'Sala não encontrada'}</strong>
+                        <strong>{reserva.salaNome || 'Sala não encontrada'}</strong>
                       </div>
                       <div className="solicitacao-detalhes">
                         {formatarData(reserva.data)} | {formatarHorario(reserva.horaInicio)} – {formatarHorario(reserva.horaFim)}

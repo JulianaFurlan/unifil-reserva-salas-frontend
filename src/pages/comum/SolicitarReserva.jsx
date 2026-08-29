@@ -526,7 +526,7 @@ const handleChange = (e) => {
         <div className="page-title-com-ajuda">
           <h1 className="page-title">{isEditing ? "Editar Reserva" : "Solicitar Reserva"}</h1>
           <BotaoAjuda
-            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_SOLICITAR"
+            videoUrl="https://youtu.be/nIT9yep5QhA"
             titulo="Como solicitar uma reserva"
             descricao="Aprenda a preencher o formulário e enviar sua solicitação de reserva de sala."
           />

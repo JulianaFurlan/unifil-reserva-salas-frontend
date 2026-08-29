@@ -1,6 +1,25 @@
 import { useState, useEffect } from "react";
 import { HelpCircle, X } from "lucide-react";
 
+// o youtube so deixa carregar em iframe no formato /embed/ID, entao convertemos
+// links normais (youtu.be/ID ou youtube.com/watch?v=ID) pra evitar o erro de X-Frame-Options
+const paraUrlEmbed = (url) => {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname === "youtu.be") {
+      return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    }
+    if (u.hostname.includes("youtube.com") && !u.pathname.startsWith("/embed/")) {
+      const id = u.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+    return url;
+  } catch {
+    return url;
+  }
+};
+
 export default function BotaoAjuda({ videoUrl, titulo, descricao }) {
   const [aberto, setAberto] = useState(false);
 
@@ -47,7 +66,7 @@ export default function BotaoAjuda({ videoUrl, titulo, descricao }) {
             <div className="ajuda-video-container">
               <iframe
                 className="ajuda-video-iframe"
-                src={videoUrl}
+                src={paraUrlEmbed(videoUrl)}
                 title={titulo || "Tutorial em vídeo"}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

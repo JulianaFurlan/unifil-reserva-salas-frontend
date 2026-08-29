@@ -118,6 +118,10 @@ export default function ConsultarDisponibilidade() {
       return { tipo: "manutencao", label: "Em manutenção", classe: "status-manutencao" };
     }
 
+    if (filtroHorarioAtivo) {
+      return { tipo: "livre", label: "Disponível no horário", classe: "status-disponivel" };
+    }
+
     if (!ocupacao || ocupacao.totalReservas === 0) {
       return { tipo: "livre", label: "Disponível", classe: "status-disponivel" };
     }
@@ -180,7 +184,7 @@ export default function ConsultarDisponibilidade() {
         <div className="page-title-com-ajuda">
           <h1 className="page-title">Consultar Disponibilidade</h1>
           <BotaoAjuda
-            videoUrl="https://www.youtube.com/embed/PLACEHOLDER_DISPONIBILIDADE"
+            videoUrl="https://youtu.be/F069m9AdnQE"
             titulo="Como consultar disponibilidade"
             descricao="Veja como verificar quais salas estão disponíveis em uma data e horário."
           />
@@ -225,7 +229,7 @@ export default function ConsultarDisponibilidade() {
           <span className="legenda-bolinha legenda-amarela" /> Parcialmente ocupada
         </div>
         <div className="legenda-item">
-          <span className="legenda-bolinha legenda-vermelha" /> Totalmente ocupada{filtroHorarioAtivo ? " / sem disponibilidade no horário buscado" : ""}
+          <span className="legenda-bolinha legenda-vermelha" /> Totalmente ocupada
         </div>
         <div className="legenda-item">
           <span className="legenda-bolinha legenda-cinza" /> Em manutenção
@@ -239,6 +243,12 @@ export default function ConsultarDisponibilidade() {
           </div>
         )}
       </div>
+
+      {filtroHorarioAtivo && (
+        <p className="aviso-filtro-horario">
+          Filtrando por horário: só aparecem as salas livres nesse intervalo em cada bloco.
+        </p>
+      )}
 
       {/* modal de confirmacao de reserva com horario */}
       {modalReserva.aberto && modalReserva.sala && (
