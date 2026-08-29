@@ -598,6 +598,29 @@
   margin: 0 0 4px 0;
 }
 
+.card-sala-status {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+}
+
+.card-sala-status-manutencao {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.card-sala-status-inativa {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .card-sala {
   font-size: 12px;
   opacity: 0.85;
@@ -1066,55 +1089,6 @@
   color: #94a3b8;
 }
 
-/* tela alterar senha, reaproveita classes do login.css, prefixo as- e o que for so daqui */
-
-.banner-senha-temporaria {
-  width: 100%;
-  max-width: 550px;
-  margin: 0 auto 24px;
-  padding: 14px 18px;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 10px;
-  color: #9a3412;
-  font-size: 14px;
-  line-height: 1.5;
-  text-align: center;
-}
-
-/* pisca o botao de salvar quando a senha ainda e temporaria */
-.login-btn-destaque {
-  animation: login-btn-pulso 1.8s ease-in-out infinite;
-}
-
-@keyframes login-btn-pulso {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(245, 130, 32, 0.55);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(245, 130, 32, 0);
-  }
-}
-
-.as-btn-voltar {
-  display: block;
-  width: 100%;
-  text-align: center;
-  margin-top: 20px;
-  background: transparent;
-  border: none;
-  color: #6C6C6C;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: color 0.2s;
-}
-
-.as-btn-voltar:hover {
-  color: #f58220;
-}
-
 /* tela gerenciar salas, prefixo gs-, nao compartilha classe com as outras telas */
 
 .gs-container {
@@ -1413,10 +1387,21 @@
 
 .gs-sala-acoes {
   display: flex;
+  flex-direction: column;
   gap: 6px;
   margin-top: auto;
   padding-top: 10px;
   border-top: 1px solid #f3f4f6;
+}
+
+.gs-sala-acoes-topo {
+  display: flex;
+  gap: 6px;
+}
+
+.gs-btn-status {
+  flex: none;
+  width: 100%;
 }
 
 .gs-btn-acao {
@@ -1426,8 +1411,8 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  background: #f9fafb;
-  border: 1px solid #eef2f6;
+  background: #f8f9fb;
+  border: 1.5px solid #eef2f6;
   color: #374151;
   padding: 7px 6px;
   border-radius: 8px;
@@ -1440,16 +1425,34 @@
   text-overflow: ellipsis;
 }
 
-.gs-btn-acao:hover {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #2563eb;
+.gs-btn-editar {
+  border-color: #fcd34d;
+}
+
+.gs-btn-editar:hover {
+  background: #fef3c7;
+  border-color: #fbbf24;
+  color: #92400e;
+}
+
+.gs-btn-acao-perigo {
+  border-color: #fca5a5;
 }
 
 .gs-btn-acao-perigo:hover {
   background: #fee2e2;
   border-color: #fecaca;
   color: #dc2626;
+}
+
+.gs-btn-status {
+  border-color: #bfdbfe;
+}
+
+.gs-btn-status:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #2563eb;
 }
 
 .gs-sala-highlight {
@@ -1900,6 +1903,16 @@
   white-space: nowrap;
 }
 
+.aviso-filtro-horario {
+  margin: 0 0 28px;
+  padding: 10px 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  color: #1d4ed8;
+  font-size: 13px;
+}
+
 .legenda-bolinha {
   width: 10px;
   height: 10px;
@@ -1962,7 +1975,7 @@
 
 .salas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 24px;
   margin-bottom: 60px;
 }
@@ -2052,6 +2065,7 @@
   color: #dc2626;
   max-height: 60px;
   overflow-y: auto;
+  overflow-x: hidden;
   font-size: 12px;
   margin-bottom: 12px;
   background: #fef2f2;
@@ -2075,6 +2089,7 @@
 
 .sala-horario-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   padding: 1px 0;
@@ -2094,6 +2109,7 @@
   font-weight: 400;
   font-size: 11px;
   margin-left: 4px;
+  word-break: break-all;
 }
 
 .sala-manutencao {
@@ -2763,6 +2779,23 @@
     width: 95%;
   }
 
+  /* no celular o video e o foco, esconde a descricao e encolhe o cabecalho */
+  .ajuda-modal-content {
+    padding: 14px;
+  }
+
+  .ajuda-modal-header {
+    margin-bottom: 10px;
+  }
+
+  .ajuda-modal-titulo {
+    font-size: 15px;
+  }
+
+  .ajuda-modal-descricao {
+    display: none;
+  }
+
   .gs-modal-rodape {
     flex-direction: column-reverse;
   }
@@ -3227,10 +3260,6 @@
 
 /* celular */
 @media (max-width: 640px) {
-  .ajuda-modal-content {
-    padding: 18px;
-  }
-
   .banner-primeiro-acesso-conteudo {
     flex-direction: column;
     align-items: flex-start;

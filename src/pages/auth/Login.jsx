@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import logoUnifil from '../../assets/logo-Unifil.png';
-import './login.css';
+import './entrar.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -43,68 +43,78 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-top-bar">
-        <div className="logo-container">
-          <img src={logoUnifil} alt="Logo UniFil" className="logo-image" />
-          <div className="divider">|</div>
-          <div className="university-name">Centro Universitário Filadélfia</div>
+    <div className="entrar-pagina">
+      <div className="entrar-linha-topo" />
+
+      <div className="entrar-topo">
+        <div className="entrar-topo-conteudo">
+          <img src={logoUnifil} alt="Logo UniFil" className="entrar-logo" />
+          <span className="entrar-divisor">|</span>
+          <span className="entrar-instituicao">Centro Universitário Filadélfia</span>
         </div>
       </div>
 
-      <div className="login-content">
-        <div className="login-header">
-          <h1 className="login-title">Faça login</h1>
-        </div>
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>E-mail institucional</label>
-            <div className="input-wrapper">
-              <Mail size={20} className="input-icon" />
-              <input
-                type="email"
-                className="form-input"
-                placeholder="seuemail@unifil.br"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+      <div className="entrar-main">
+        <div className="entrar-card">
+          <div className="entrar-card-faixa" />
+          <div className="entrar-card-conteudo">
+            <div className="entrar-icone-badge">
+              <KeyRound size={26} />
             </div>
-          </div>
 
-          <div className="form-group">
-            <label>Senha</label>
-            <div className="input-wrapper">
-              <Lock size={20} className="input-icon" />
-              <input
-                type={mostrarSenha ? 'text' : 'password'}
-                className="form-input"
-                placeholder="Sua senha"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setMostrarSenha(!mostrarSenha)}
-              >
-                {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
+            <h1 className="entrar-titulo">Reserva de Salas</h1>
+            <p className="entrar-subtitulo">Reserve seu espaço</p>
+
+            <form onSubmit={handleSubmit}>
+              <div className="entrar-campo">
+                <label>E-mail institucional</label>
+                <div className="entrar-input-wrapper">
+                  <Mail size={18} className="entrar-input-icon" />
+                  <input
+                    type="email"
+                    className="entrar-input"
+                    placeholder="seuemail@unifil.br"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="entrar-campo">
+                <label>Senha</label>
+                <div className="entrar-input-wrapper">
+                  <Lock size={18} className="entrar-input-icon" />
+                  <input
+                    type={mostrarSenha ? 'text' : 'password'}
+                    className="entrar-input"
+                    placeholder="Sua senha"
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="entrar-senha-toggle"
+                    onClick={() => setMostrarSenha(!mostrarSenha)}
+                  >
+                    {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && <div className="entrar-erro">{error}</div>}
+
+              <button type="submit" className="entrar-btn" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
               </button>
-            </div>
+
+              <p className="entrar-aviso-senha">
+                Esqueceu sua senha? Contate um administrador para resetá-la.
+              </p>
+            </form>
           </div>
-
-          {error && <div className="login-error">{error}</div>}
-
-          <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-
-          <p className="forgot-password">
-            Esqueceu sua senha? Contate um administrador para resetá-la.
-          </p>
-        </form>
+        </div>
       </div>
     </div>
   );

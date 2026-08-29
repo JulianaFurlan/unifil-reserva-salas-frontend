@@ -1,0 +1,292 @@
+.entrar-pagina {
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+.entrar-linha-topo {
+  height: 8px;
+  background: #F27F20;
+}
+
+.entrar-topo {
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 20px 40px;
+}
+
+.entrar-topo-conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.entrar-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+.entrar-divisor {
+  font-size: 30px;
+  color: #AFB1B6;
+  font-weight: 100;
+  line-height: 1;
+}
+
+.entrar-instituicao {
+  font-size: 15px;
+  font-weight: 600;
+  color: #AFB1B6;
+  white-space: nowrap;
+}
+
+.entrar-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+}
+
+.entrar-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #eef2f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  animation: entrar-card-surge 0.4s ease-out;
+}
+
+@keyframes entrar-card-surge {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.entrar-card-faixa {
+  height: 5px;
+  background: #F27F20;
+}
+
+.entrar-card-conteudo {
+  padding: 40px 36px;
+}
+
+.entrar-icone-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #FF7A00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(255, 122, 0, 0.35);
+}
+
+.entrar-titulo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: center;
+  margin: 0 0 4px;
+}
+
+.entrar-subtitulo {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0 0 28px;
+}
+
+.entrar-campo {
+  margin-bottom: 22px;
+}
+
+.entrar-campo label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+}
+
+.entrar-input-wrapper {
+  position: relative;
+}
+
+.entrar-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 15px;
+  color: #374151;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.entrar-input::placeholder {
+  color: #9ca3af;
+}
+
+.entrar-input:focus {
+  outline: none;
+  border-color: #FF7A00;
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.15);
+  background: #ffffff;
+}
+
+.entrar-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.entrar-senha-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.entrar-senha-toggle:hover {
+  color: #FF7A00;
+}
+
+.entrar-erro {
+  margin-bottom: 18px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  text-align: center;
+  font-size: 13px;
+}
+
+.entrar-btn {
+  width: 100%;
+  background: #FF7A00;
+  color: #ffffff;
+  border: none;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+  transition: 0.2s;
+}
+
+.entrar-btn:hover {
+  background: #e66e00;
+  transform: translateY(-2px);
+}
+
+.entrar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.entrar-btn-destaque {
+  animation: entrar-btn-pulso 1.8s ease-in-out infinite;
+}
+
+@keyframes entrar-btn-pulso {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3), 0 0 0 8px rgba(255, 122, 0, 0.18);
+  }
+}
+
+.entrar-btn-voltar {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 18px;
+  background: transparent;
+  border: none;
+  color: #9a9a9a;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.entrar-btn-voltar:hover {
+  color: #FF7A00;
+}
+
+.entrar-aviso-temp {
+  margin-bottom: 22px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.entrar-aviso-senha {
+  text-align: center;
+  margin: 22px 0 0;
+  font-size: 13px;
+  color: #9a9a9a;
+  line-height: 1.5;
+}
+
+/* celular, ate 480px */
+@media (max-width: 480px) {
+  .entrar-topo {
+    padding: 16px 20px;
+  }
+
+  .entrar-logo {
+    height: 44px;
+  }
+
+  .entrar-divisor {
+    display: none;
+  }
+
+  .entrar-instituicao {
+    font-size: 12px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .entrar-main {
+    padding: 36px 16px;
+  }
+
+  .entrar-card-conteudo {
+    padding: 32px 24px;
+  }
+}
