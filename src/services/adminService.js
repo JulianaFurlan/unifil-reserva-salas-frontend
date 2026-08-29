@@ -15,3 +15,4 @@ export const editarUsuario = (id, dados) => api.put(`/usuarios/${id}`, dados);
 export const alterarAtivo = (id, ativo) =>
     api.put(`/usuarios/${id}/ativo`, { ativo });
 export const resetarSenha = (id) => api.put(`/usuarios/${id}/resetar-senha`);
+export const deletarUsuario = (id) => api.delete(`/usuarios/${id}`);

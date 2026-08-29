@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { getUsuarios, criarUsuario, editarUsuario, alterarAtivo, resetarSenha } from "../../services/adminService";
+import { getUsuarios, criarUsuario, editarUsuario, alterarAtivo, resetarSenha, deletarUsuario } from "../../services/adminService";
 import { useToasts } from "../../hooks/useToasts";
 import Toast from "../../components/common/Toast";
-import { AiOutlinePlus, AiOutlineEdit, AiOutlineReload } from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineEdit, AiOutlineReload, AiOutlineDelete } from "react-icons/ai";
 import "../styles/reserva.css";
 
 const FORM_VAZIO = {
@@ -17,6 +17,8 @@ const [modal, setModal] = useState({ aberto: false, usuario: null });
 const [modalConfirmacao, setModalConfirmacao] = useState({
     aberto: false, titulo: "", mensagem: "", onConfirmar: null
 });
+const [modalExcluir, setModalExcluir] = useState({ aberto: false, usuario: null, etapa: 1 });
+const [excluindo, setExcluindo] = useState(false);
 const [form, setForm] = useState(FORM_VAZIO);
 const [salvando, setSalvando] = useState(false);
 
@@ -112,6 +114,33 @@ setModalConfirmacao({
 });
 };
 
+const abrirModalExcluir = (usuario) => setModalExcluir({ aberto: true, usuario, etapa: 1 });
+const fecharModalExcluir = () => setModalExcluir({ aberto: false, usuario: null, etapa: 1 });
+const avancarConfirmacaoExcluir = () => setModalExcluir(prev => ({ ...prev, etapa: 2 }));
+
+// backend bloqueia a exclusao e retorna erro quando o usuario ainda tem reserva no historico
+const temReservaCadastrada = (err) =>
+    err.response?.status === 409 || /reserva/i.test(err.response?.data?.message || "");
+
+const excluirUsuario = async () => {
+const { usuario } = modalExcluir;
+setExcluindo(true);
+try {
+    await deletarUsuario(usuario.id);
+    addToast("success", `Usuário "${usuario.nome}" excluído`);
+    fecharModalExcluir();
+    carregar();
+} catch (err) {
+    if (temReservaCadastrada(err)) {
+    addToast("error", err.response?.data?.message || "Este usuário possui reservas no histórico e não pode ser excluído.");
+    } else {
+    addToast("error", err.response?.data?.message || "Não foi possível excluir este usuário");
+    }
+} finally {
+    setExcluindo(false);
+}
+};
+
 const tipoCor = (tipo) => {
 if (tipo === "ADMIN") return { bg: "#ede9fe", color: "#7c3aed" };
 if (tipo === "GESTOR") return { bg: "#dbeafe", color: "#1d4ed8" };
@@ -140,6 +169,47 @@ return (
             Cancelar
             </button>
         </div>
+        </div>
+    </div>
+    )}
+
+    {/* MODAL DE EXCLUSAO, DUAS ETAPAS DE CONFIRMACAO */}
+    {modalExcluir.aberto && (
+    <div className="modal-overlay" onClick={fecharModalExcluir}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+        {modalExcluir.etapa === 1 ? (
+            <>
+            <h3 className="modal-title">Excluir Usuário</h3>
+            <p className="modal-message">
+                Tem certeza que deseja excluir <strong>{modalExcluir.usuario?.nome}</strong>?
+                Essa ação não pode ser desfeita. Se o usuário tiver reservas no histórico, a exclusão será bloqueada.
+            </p>
+            <div className="modal-buttons">
+                <button className="modal-btn modal-btn-primary" onClick={avancarConfirmacaoExcluir}>
+                Continuar
+                </button>
+                <button className="modal-btn modal-btn-secondary" onClick={fecharModalExcluir}>
+                Cancelar
+                </button>
+            </div>
+            </>
+        ) : (
+            <>
+            <h3 className="modal-title">Confirmar exclusão definitiva</h3>
+            <p className="modal-message">
+                Última confirmação: o usuário <strong>{modalExcluir.usuario?.nome}</strong> será excluído{" "}
+                <strong>permanentemente</strong> e não poderá ser recuperado. Deseja mesmo excluir?
+            </p>
+            <div className="modal-buttons">
+                <button className="modal-btn modal-btn-primary" onClick={excluirUsuario} disabled={excluindo}>
+                {excluindo ? "Excluindo..." : "Sim, excluir definitivamente"}
+                </button>
+                <button className="modal-btn modal-btn-secondary" onClick={fecharModalExcluir}>
+                Cancelar
+                </button>
+            </div>
+            </>
+        )}
         </div>
     </div>
     )}
@@ -237,6 +307,9 @@ return (
                     </button>
                     <button className="btn-resetar" onClick={() => handleResetar(u)} title="Resetar senha">
                     <AiOutlineReload size={18} />
+                    </button>
+                    <button className="btn-excluir" onClick={() => abrirModalExcluir(u)} title="Excluir usuário">
+                    <AiOutlineDelete size={18} />
                     </button>
                 </td>
                 </tr>

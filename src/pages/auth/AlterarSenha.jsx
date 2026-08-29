@@ -6,7 +6,7 @@ import { useToasts } from '../../hooks/useToasts';
 import api from '../../services/api';
 import Toast from '../../components/common/Toast';
 import logoUnifil from '../../assets/logo-Unifil.png';
-import './login.css';
+import './entrar.css';
 import '../styles/reserva.css';
 
 const rotaPorTipo = (tipo) => {
@@ -30,6 +30,8 @@ export default function AlterarSenha() {
 
   if (authLoading) return <div>Carregando...</div>;
   if (!user) return <Navigate to="/login" replace />;
+
+  const senhaTemporaria = user.senhaTemporaria === true;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,7 +72,7 @@ export default function AlterarSenha() {
   };
 
   return (
-    <div className="login-container">
+    <div className="entrar-pagina">
       <div className="toast-container">
         {toasts.map(toast => (
           <Toast
@@ -85,108 +87,117 @@ export default function AlterarSenha() {
         ))}
       </div>
 
-      <div className="login-top-bar">
-        <div className="logo-container">
-          <img src={logoUnifil} alt="Logo UniFil" className="logo-image" />
-          <div className="divider">|</div>
-          <div className="university-name">Centro Universitário Filadélfia</div>
+      <div className="entrar-linha-topo" />
+
+      <div className="entrar-topo">
+        <div className="entrar-topo-conteudo">
+          <img src={logoUnifil} alt="Logo UniFil" className="entrar-logo" />
+          <span className="entrar-divisor">|</span>
+          <span className="entrar-instituicao">Centro Universitário Filadélfia</span>
         </div>
       </div>
 
-      <div className="login-content">
-        <div className="login-header">
-          <h1 className="login-title">Alterar senha</h1>
+      <div className="entrar-main">
+        <div className="entrar-card">
+          <div className="entrar-card-faixa" />
+          <div className="entrar-card-conteudo">
+            <div className="entrar-icone-badge">
+              <Lock size={26} />
+            </div>
+
+            <h1 className="entrar-titulo">Alterar senha</h1>
+            <p className="entrar-subtitulo">
+              {senhaTemporaria ? 'Defina sua senha pessoal para continuar' : 'Preencha os campos abaixo'}
+            </p>
+
+            {senhaTemporaria && (
+              <div className="entrar-aviso-temp">
+                Preencha o formulário e clique em <strong>"Salvar nova senha"</strong> para
+                definir uma senha pessoal antes de continuar.
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div className="entrar-campo">
+                <label>Senha atual</label>
+                <div className="entrar-input-wrapper">
+                  <Lock size={18} className="entrar-input-icon" />
+                  <input
+                    type={mostrarSenhaAtual ? 'text' : 'password'}
+                    className="entrar-input"
+                    placeholder="Sua senha atual"
+                    value={senhaAtual}
+                    onChange={(e) => setSenhaAtual(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="entrar-senha-toggle"
+                    onClick={() => setMostrarSenhaAtual(v => !v)}
+                  >
+                    {mostrarSenhaAtual ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="entrar-campo">
+                <label>Nova senha</label>
+                <div className="entrar-input-wrapper">
+                  <Lock size={18} className="entrar-input-icon" />
+                  <input
+                    type={mostrarNovaSenha ? 'text' : 'password'}
+                    className="entrar-input"
+                    placeholder="Mínimo 6 caracteres"
+                    value={novaSenha}
+                    onChange={(e) => setNovaSenha(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="entrar-senha-toggle"
+                    onClick={() => setMostrarNovaSenha(v => !v)}
+                  >
+                    {mostrarNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="entrar-campo">
+                <label>Confirmar nova senha</label>
+                <div className="entrar-input-wrapper">
+                  <Lock size={18} className="entrar-input-icon" />
+                  <input
+                    type={mostrarConfirmarSenha ? 'text' : 'password'}
+                    className="entrar-input"
+                    placeholder="Repita a nova senha"
+                    value={confirmarSenha}
+                    onChange={(e) => setConfirmarSenha(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="entrar-senha-toggle"
+                    onClick={() => setMostrarConfirmarSenha(v => !v)}
+                  >
+                    {mostrarConfirmarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className={`entrar-btn ${senhaTemporaria ? "entrar-btn-destaque" : ""}`}
+                disabled={salvando}
+              >
+                {salvando ? 'Salvando...' : 'Salvar nova senha'}
+              </button>
+
+              <button type="button" className="entrar-btn-voltar" onClick={() => navigate(-1)}>
+                Voltar
+              </button>
+            </form>
+          </div>
         </div>
-
-        {user.senhaTemporaria === true && (
-          <div className="banner-senha-temporaria">
-            Você está usando a senha aleatória que o administrador gerou pra você.
-            Preencha o formulário abaixo e clique em <strong>"Salvar nova senha"</strong> para
-            definir uma senha pessoal antes de continuar. ⬇
-          </div>
-        )}
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Senha atual</label>
-            <div className="input-wrapper">
-              <Lock size={20} className="input-icon" />
-              <input
-                type={mostrarSenhaAtual ? 'text' : 'password'}
-                className="form-input"
-                placeholder="Sua senha atual"
-                value={senhaAtual}
-                onChange={(e) => setSenhaAtual(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setMostrarSenhaAtual(v => !v)}
-              >
-                {mostrarSenhaAtual ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Nova senha</label>
-            <div className="input-wrapper">
-              <Lock size={20} className="input-icon" />
-              <input
-                type={mostrarNovaSenha ? 'text' : 'password'}
-                className="form-input"
-                placeholder="Mínimo 6 caracteres"
-                value={novaSenha}
-                onChange={(e) => setNovaSenha(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setMostrarNovaSenha(v => !v)}
-              >
-                {mostrarNovaSenha ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Confirmar nova senha</label>
-            <div className="input-wrapper">
-              <Lock size={20} className="input-icon" />
-              <input
-                type={mostrarConfirmarSenha ? 'text' : 'password'}
-                className="form-input"
-                placeholder="Repita a nova senha"
-                value={confirmarSenha}
-                onChange={(e) => setConfirmarSenha(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setMostrarConfirmarSenha(v => !v)}
-              >
-                {mostrarConfirmarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className={`login-btn ${user.senhaTemporaria === true ? "login-btn-destaque" : ""}`}
-            disabled={salvando}
-          >
-            {salvando ? 'Salvando...' : 'Salvar nova senha'}
-          </button>
-        </form>
-
-        {user.senhaTemporaria === false && (
-          <button type="button" className="as-btn-voltar" onClick={() => navigate(-1)}>
-            Voltar
-          </button>
-        )}
       </div>
     </div>
   );

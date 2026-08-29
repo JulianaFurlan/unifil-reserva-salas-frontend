@@ -64,8 +64,12 @@ export default function GerenciarSalas() {
   const [salvando, setSalvando] = useState(false);
   const [erros, setErros] = useState({});
 
-  const [modalExcluir, setModalExcluir] = useState({ aberto: false, sala: null });
+  const [modalExcluir, setModalExcluir] = useState({ aberto: false, sala: null, etapa: 1 });
   const [excluindo, setExcluindo] = useState(false);
+
+  const [modalDesativar, setModalDesativar] = useState({
+    aberto: false, sala: null, novoStatus: null, totalReservas: 0
+  });
 
   const [salaDestaqueId, setSalaDestaqueId] = useState(null);
 
@@ -124,6 +128,14 @@ export default function GerenciarSalas() {
     const hoje = hojeISO();
     return reservasAprovadas.some(r =>
       r.salaId === salaId && r.data === hoje && !reservaEncerradaHoje(r.data, r.horaFim)
+    );
+  };
+
+  const reservasFuturasDaSala = (salaId) => {
+    const hoje = hojeISO();
+    return reservasAprovadas.filter(r =>
+      r.salaId === salaId &&
+      (r.data > hoje || (r.data === hoje && !reservaEncerradaHoje(r.data, r.horaFim)))
     );
   };
 
@@ -198,21 +210,45 @@ export default function GerenciarSalas() {
     }
   };
 
-  const alternarStatus = async (sala) => {
+  const alternarStatus = (sala) => {
     const novoStatus = PROXIMO_STATUS[sala.status] || "ATIVA";
+
+    if (novoStatus !== "ATIVA") {
+      const futuras = reservasFuturasDaSala(sala.id);
+      if (futuras.length > 0) {
+        setModalDesativar({ aberto: true, sala, novoStatus, totalReservas: futuras.length });
+        return;
+      }
+    }
+
+    confirmarAlterarStatus(sala, novoStatus);
+  };
+
+  const fecharModalDesativar = () => {
+    setModalDesativar({ aberto: false, sala: null, novoStatus: null, totalReservas: 0 });
+  };
+
+  const confirmarAlterarStatus = async (sala, novoStatus) => {
     try {
       await alterarStatusSala(sala.id, novoStatus);
       addToast("success", `Sala "${sala.nome}" agora está ${LABEL_STATUS[novoStatus]}`);
       carregar();
     } catch (err) {
       addToast("error", err.response?.data?.message || "Erro ao alterar status");
+    } finally {
+      fecharModalDesativar();
     }
   };
 
-  const abrirModalExcluir = (sala) => setModalExcluir({ aberto: true, sala });
-  const fecharModalExcluir = () => setModalExcluir({ aberto: false, sala: null });
+  const abrirModalExcluir = (sala) => setModalExcluir({ aberto: true, sala, etapa: 1 });
+  const fecharModalExcluir = () => setModalExcluir({ aberto: false, sala: null, etapa: 1 });
+  const avancarConfirmacaoExcluir = () => setModalExcluir(prev => ({ ...prev, etapa: 2 }));
 
-  const confirmarExclusao = async () => {
+  // backend bloqueia a exclusao e retorna erro quando a sala ainda tem reserva associada
+  const temReservaCadastrada = (err) =>
+    err.response?.status === 409 || /reserva/i.test(err.response?.data?.message || "");
+
+  const excluirSala = async () => {
     const { sala } = modalExcluir;
     setExcluindo(true);
     try {
@@ -221,7 +257,11 @@ export default function GerenciarSalas() {
       fecharModalExcluir();
       carregar();
     } catch (err) {
-      addToast("error", err.response?.data?.message || "Não foi possível excluir esta sala");
+      if (temReservaCadastrada(err)) {
+        addToast("error", err.response?.data?.message || "Esta sala possui reservas associadas e não pode ser excluída.");
+      } else {
+        addToast("error", err.response?.data?.message || "Não foi possível excluir esta sala");
+      }
     } finally {
       setExcluindo(false);
     }
@@ -235,21 +275,68 @@ export default function GerenciarSalas() {
         ))}
       </div>
 
-      {/* modal de exclusao */}
+      {/* modal de exclusao, duas etapas de confirmacao */}
       {modalExcluir.aberto && (
         <div className="modal-overlay" onClick={fecharModalExcluir}>
           <div className="gs-modal gs-modal-pequeno" onClick={e => e.stopPropagation()}>
-            <h3 className="gs-modal-titulo">Excluir Sala</h3>
+            {modalExcluir.etapa === 1 ? (
+              <>
+                <h3 className="gs-modal-titulo">Excluir Sala</h3>
+                <p className="gs-modal-texto">
+                  Tem certeza que deseja excluir a sala <strong>"{modalExcluir.sala?.nome}"</strong>?
+                  Essa ação não pode ser desfeita. Se a sala tiver reservas associadas, a exclusão será bloqueada.
+                </p>
+                <div className="gs-modal-rodape">
+                  <button type="button" className="gs-btn-cancelar" onClick={fecharModalExcluir}>
+                    Cancelar
+                  </button>
+                  <button type="button" className="gs-btn-excluir-confirmar" onClick={avancarConfirmacaoExcluir}>
+                    Continuar
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="gs-modal-titulo">Confirmar exclusão definitiva</h3>
+                <p className="gs-modal-texto">
+                  Última confirmação: a sala <strong>"{modalExcluir.sala?.nome}"</strong> será excluída{" "}
+                  <strong>permanentemente</strong> e não poderá ser recuperada. Deseja mesmo excluir?
+                </p>
+                <div className="gs-modal-rodape">
+                  <button type="button" className="gs-btn-cancelar" onClick={fecharModalExcluir}>
+                    Cancelar
+                  </button>
+                  <button type="button" className="gs-btn-excluir-confirmar" onClick={excluirSala} disabled={excluindo}>
+                    {excluindo ? "Excluindo..." : "Sim, excluir definitivamente"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* modal de aviso ao desativar sala com reservas futuras */}
+      {modalDesativar.aberto && (
+        <div className="modal-overlay" onClick={fecharModalDesativar}>
+          <div className="gs-modal gs-modal-pequeno" onClick={e => e.stopPropagation()}>
+            <h3 className="gs-modal-titulo">Sala com reservas futuras</h3>
             <p className="gs-modal-texto">
-              Tem certeza que deseja excluir a sala <strong>"{modalExcluir.sala?.nome}"</strong>?
-              Essa ação não pode ser desfeita. Se a sala tiver reservas associadas, a exclusão será bloqueada.
+              A sala <strong>"{modalDesativar.sala?.nome}"</strong> tem {modalDesativar.totalReservas}{" "}
+              reserva{modalDesativar.totalReservas !== 1 ? "s" : ""} aprovada{modalDesativar.totalReservas !== 1 ? "s" : ""}{" "}
+              que ainda vão acontecer. Ao deixar a sala <strong>{LABEL_STATUS[modalDesativar.novoStatus]}</strong>,
+              essas reservas serão canceladas e os usuários avisados por email. Deseja continuar?
             </p>
             <div className="gs-modal-rodape">
-              <button type="button" className="gs-btn-cancelar" onClick={fecharModalExcluir}>
+              <button type="button" className="gs-btn-cancelar" onClick={fecharModalDesativar}>
                 Cancelar
               </button>
-              <button type="button" className="gs-btn-excluir-confirmar" onClick={confirmarExclusao} disabled={excluindo}>
-                {excluindo ? "Excluindo..." : "Sim, excluir"}
+              <button
+                type="button"
+                className="gs-btn-salvar"
+                onClick={() => confirmarAlterarStatus(modalDesativar.sala, modalDesativar.novoStatus)}
+              >
+                Continuar
               </button>
             </div>
           </div>
@@ -467,18 +554,24 @@ export default function GerenciarSalas() {
                     )}
 
                     <div className="gs-sala-acoes">
-                      <button className="gs-btn-acao" onClick={() => abrirModal(sala)} title="Editar sala">
-                        <AiOutlineEdit size={16} /> Editar
-                      </button>
-                      <button className="gs-btn-acao" onClick={() => alternarStatus(sala)} title="Alternar status">
-                        <AiOutlineSwap size={16} /> Status
-                      </button>
+                      <div className="gs-sala-acoes-topo">
+                        <button className="gs-btn-acao gs-btn-editar" onClick={() => abrirModal(sala)} title="Editar sala">
+                          <AiOutlineEdit size={16} /> Editar
+                        </button>
+                        <button
+                          className="gs-btn-acao gs-btn-acao-perigo"
+                          onClick={() => abrirModalExcluir(sala)}
+                          title="Excluir sala"
+                        >
+                          <AiOutlineDelete size={16} /> Excluir
+                        </button>
+                      </div>
                       <button
-                        className="gs-btn-acao gs-btn-acao-perigo"
-                        onClick={() => abrirModalExcluir(sala)}
-                        title="Excluir sala"
+                        className="gs-btn-acao gs-btn-status"
+                        onClick={() => alternarStatus(sala)}
+                        title="Alternar status"
                       >
-                        <AiOutlineDelete size={16} /> Excluir
+                        <AiOutlineSwap size={16} /> Alterar {LABEL_STATUS[PROXIMO_STATUS[sala.status] || "ATIVA"]}
                       </button>
                     </div>
                   </div>
