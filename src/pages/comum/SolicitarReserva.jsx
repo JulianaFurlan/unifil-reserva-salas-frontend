@@ -3,9 +3,9 @@ import api from "../../services/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useToasts } from "../../hooks/useToasts";
-import Toast from "../../components/common/Toast";
-import CustomSelect from "../../components/common/CustomSelect";
-import BotaoAjuda from "../../components/common/BotaoAjuda";
+import Toast from "../../components/Toast";
+import CustomSelect from "../../components/CustomSelect";
+import BotaoAjuda from "../../components/BotaoAjuda";
 import { horariosSobrepoem, hojeISO } from "../../utils/horarios";
 import { formatarData, formatarHorario } from "../../utils/formatadores";
 import "../styles/reserva.css";
@@ -103,7 +103,7 @@ export default function SolicitarReserva() {
       const response = await api.get("/salas");
       setSalas(response.data.filter(s => s.status === "ATIVA"));
     } catch (error) {
-      console.error("Erro ao carregar salas:", error);
+      console.error("Erro ao carregar salas:", error.message);
       addToast("error", "Erro ao carregar lista de salas", "Erro");
     } finally {
       setCarregandoSalas(false);
@@ -148,7 +148,7 @@ export default function SolicitarReserva() {
       const response = await api.get("/reservas/aprovadas");
       setReservas(response.data);
     } catch (error) {
-      console.error("ERRO ao carregar reservas aprovadas:", error);
+      console.error("Erro ao carregar reservas aprovadas:", error.message);
     }
   };
 

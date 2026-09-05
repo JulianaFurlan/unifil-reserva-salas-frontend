@@ -4,7 +4,7 @@ import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToasts } from '../../hooks/useToasts';
 import api from '../../services/api';
-import Toast from '../../components/common/Toast';
+import Toast from '../../components/Toast';
 import logoUnifil from '../../assets/logo-Unifil.png';
 import './entrar.css';
 import '../styles/reserva.css';

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 import { useToasts } from "../../hooks/useToasts";
-import Toast from "../../components/common/Toast";
-import BotaoAjuda from "../../components/common/BotaoAjuda";
+import Toast from "../../components/Toast";
+import BotaoAjuda from "../../components/BotaoAjuda";
 import { AiOutlineCheck, AiOutlineClose, AiOutlineSearch } from "react-icons/ai";
 import { Mail } from "lucide-react";
 import { gerarPdfOcupacao } from '../../utils/gerarPdfOcupacao';

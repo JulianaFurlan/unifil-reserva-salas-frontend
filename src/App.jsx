@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/common/ProtectedRoute";
-import Layout from "./components/common/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
 import AlterarSenha from "./pages/auth/AlterarSenha";
 import SolicitarReserva from "./pages/comum/SolicitarReserva";

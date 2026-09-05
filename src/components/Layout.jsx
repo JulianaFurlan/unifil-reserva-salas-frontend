@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { AiOutlineHome, AiOutlineMenu, AiOutlineClose, AiOutlineLock } from "react-icons/ai";
 import { BsCalendarCheck, BsInboxes } from "react-icons/bs";
 import { FiUserPlus } from "react-icons/fi";
 import { LuSearch } from "react-icons/lu";
 import { TbBuildingCog } from "react-icons/tb";
 import BannerPrimeiroAcesso from "./BannerPrimeiroAcesso";
-import logoUnifil from "../../assets/logo-Unifil.png";
+import logoUnifil from "../assets/logo-Unifil.png";
 import "./Layout.css";
 
 export default function Layout() {

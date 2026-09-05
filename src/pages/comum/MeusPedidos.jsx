@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import Toast from "../../components/common/Toast";
-import BotaoAjuda from "../../components/common/BotaoAjuda";
+import Toast from "../../components/Toast";
+import BotaoAjuda from "../../components/BotaoAjuda";
 import { useToasts } from "../../hooks/useToasts";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { formatarData, formatarHorario } from "../../utils/formatadores";
@@ -27,7 +27,7 @@ const [showCancelConfirmation, setShowCancelConfirmation] = useState(null);
       const response = await api.get("/reservas");
       setReservas(response.data);
     } catch (error) {
-      console.error("Erro:", error);
+      console.error("Erro:", error.message);
       addToast('error', 'Erro ao carregar reservas');
     } finally {
       setLoading(false);

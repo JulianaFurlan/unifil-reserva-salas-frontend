@@ -18,3 +18,34 @@ export const reservaEncerradaHoje = (data, horaFim) => {
   if (!fim) return false;
   return new Date() > fim;
 };
+
+const MINUTOS_INICIO_DIA = 8 * 60;
+const MINUTOS_FIM_DIA = 22 * 60;
+
+const paraMinutos = (horaStr) => {
+  const [h, m] = horaStr.slice(0, 5).split(":").map(Number);
+  return h * 60 + m;
+};
+
+// soma o tempo livre entre 08:00 e 22:00, mesclando reservas que se sobrepoem
+export const minutosLivresNoDia = (reservas) => {
+  const intervalos = reservas
+    .map(r => [
+      Math.max(paraMinutos(r.horaInicio), MINUTOS_INICIO_DIA),
+      Math.min(paraMinutos(r.horaFim), MINUTOS_FIM_DIA),
+    ])
+    .filter(([ini, fim]) => fim > ini)
+    .sort((a, b) => a[0] - b[0]);
+
+  let minutosOcupados = 0;
+  let finalAtual = MINUTOS_INICIO_DIA;
+  intervalos.forEach(([ini, fim]) => {
+    const inicioReal = Math.max(ini, finalAtual);
+    if (fim > inicioReal) {
+      minutosOcupados += fim - inicioReal;
+      finalAtual = fim;
+    }
+  });
+
+  return (MINUTOS_FIM_DIA - MINUTOS_INICIO_DIA) - minutosOcupados;
+};

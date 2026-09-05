@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImUsers } from "react-icons/im";
 import { useAuth } from "../../hooks/useAuth";
-import BotaoAjuda from "../../components/common/BotaoAjuda";
+import BotaoAjuda from "../../components/BotaoAjuda";
 import api from "../../services/api";
 import { formatarData, formatarHorario } from "../../utils/formatadores";
-import { horariosSobrepoem, hojeISO, reservaEncerradaHoje } from "../../utils/horarios";
+import { horariosSobrepoem, hojeISO, reservaEncerradaHoje, minutosLivresNoDia } from "../../utils/horarios";
+
+const MINUTOS_MINIMO_LIVRE = 20;
 import "../styles/reserva.css";
 
 export default function ConsultarDisponibilidade() {
@@ -51,7 +53,7 @@ export default function ConsultarDisponibilidade() {
         setReservas(reservasRes.data);
         setReservasPendentes(todasRes ? todasRes.data.filter(r => r.status === "PENDENTE") : []);
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+        console.error("Erro ao carregar dados:", error.message);
       } finally {
         setLoading(false);
       }
@@ -95,9 +97,7 @@ export default function ConsultarDisponibilidade() {
         sala,
         reservas: reservasParaExibir,
         totalReservas: aprovadasDaSala.length,
-        ocupacaoTotal: aprovadasDaSala.some(r =>
-          r.horaInicio <= "08:00:00" && r.horaFim >= "22:00:00"
-        ),
+        ocupacaoTotal: minutosLivresNoDia(aprovadasDaSala) < MINUTOS_MINIMO_LIVRE,
         disponivelNoFiltro: !filtroHorarioAtivo || !aprovadasDaSala.some(r =>
           horariosSobrepoem(horaInicioFiltro, horaFimFiltro, r.horaInicio.slice(0, 5), r.horaFim.slice(0, 5))
         ),

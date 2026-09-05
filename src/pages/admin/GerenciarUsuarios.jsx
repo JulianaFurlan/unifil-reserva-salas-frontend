@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getUsuarios, criarUsuario, editarUsuario, alterarAtivo, resetarSenha, deletarUsuario } from "../../services/adminService";
 import { useToasts } from "../../hooks/useToasts";
-import Toast from "../../components/common/Toast";
+import Toast from "../../components/Toast";
 import { AiOutlinePlus, AiOutlineEdit, AiOutlineReload, AiOutlineDelete } from "react-icons/ai";
 import "../styles/reserva.css";
 

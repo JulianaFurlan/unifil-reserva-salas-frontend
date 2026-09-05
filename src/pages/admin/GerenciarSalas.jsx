@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { getSalas, criarSala, editarSala, alterarStatusSala, deletarSala } from "../../services/adminService";
 import api from "../../services/api";
-import Toast from "../../components/common/Toast";
+import Toast from "../../components/Toast";
 import { useToasts } from "../../hooks/useToasts";
 import { hojeISO, reservaEncerradaHoje } from "../../utils/horarios";
 import { AiOutlinePlus, AiOutlineEdit, AiOutlineDelete, AiOutlineSwap, AiOutlineTeam } from "react-icons/ai";
