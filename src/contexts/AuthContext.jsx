@@ -7,43 +7,51 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
+    // sobra da versao antiga, o token agora fica so no cookie httpOnly
+    localStorage.removeItem('token');
+
+    // quem diz se tem sessao e o backend, pelo cookie
+    const carregarUsuario = async () => {
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        api.defaults.headers.Authorization = `Bearer ${token}`;
+        const response = await api.get('/auth/me');
+        localStorage.setItem('user', JSON.stringify(response.data));
+        setUser(response.data);
       } catch {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+    carregarUsuario();
   }, []);
 
   const login = async (email, senha) => {
     try {
       const response = await api.post('/auth/login', { email, senha });
-      const { token, usuario } = response.data;
-      
-      localStorage.setItem('token', token);
+      const { usuario } = response.data;
+
       localStorage.setItem('user', JSON.stringify(usuario));
-      api.defaults.headers.Authorization = `Bearer ${token}`;
       setUser(usuario);
-      
+
       return { success: true, user: usuario };
     } catch (error) {
-      return { success: false, message: error.response?.data?.message || 'Email ou senha inválidos' };
+      const mensagem = error.response
+        ? error.response.data?.message || 'Email ou senha inválidos'
+        : 'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
+      return { success: false, message: mensagem };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
     localStorage.removeItem('user');
-    delete api.defaults.headers.Authorization;
     setUser(null);
+
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // mesmo se falhar, o usuario ja saiu da tela
+    }
   };
 
   return (

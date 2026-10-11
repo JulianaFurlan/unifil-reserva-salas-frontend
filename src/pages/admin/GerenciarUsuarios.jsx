@@ -75,7 +75,6 @@ const fecharConfirmacao = () => {
 setModalConfirmacao({ aberto: false, titulo: "", mensagem: "", onConfirmar: null });
 };
 
-// o reset nao devolve mais a senha pro admin, o usuario recebe por email
 const handleResetar = (usuario) => {
 setModalConfirmacao({
     aberto: true,
@@ -131,6 +130,7 @@ try {
     fecharModalExcluir();
     carregar();
 } catch (err) {
+    fecharModalExcluir();
     if (temReservaCadastrada(err)) {
     addToast("error", err.response?.data?.message || "Este usuário possui reservas no histórico e não pode ser excluído.");
     } else {

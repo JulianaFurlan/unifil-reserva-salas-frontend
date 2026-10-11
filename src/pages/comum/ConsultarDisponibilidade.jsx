@@ -162,13 +162,25 @@ export default function ConsultarDisponibilidade() {
     setModalReserva({ aberto: true, sala });
   };
 
+  // reserva aprovada que colide com o horario escolhido no modal
+  const conflitoModal = useMemo(() => {
+    if (!modalReserva.sala) return null;
+    const ocupacao = ocupacaoPorSala[modalReserva.sala.id];
+    if (!ocupacao) return null;
+    return ocupacao.reservas.find(r =>
+      r.tipoOcupacao === "aprovado" &&
+      horariosSobrepoem(horarioInicio, horarioFim, r.horaInicio.slice(0, 5), r.horaFim.slice(0, 5))
+    ) || null;
+  }, [modalReserva.sala, ocupacaoPorSala, horarioInicio, horarioFim]);
+
   const handleConfirmarReserva = () => {
     const sala = modalReserva.sala;
-    
+    if (conflitoModal) return;
+
     sessionStorage.removeItem(`rascunho-reserva-${user?.id ?? 'anonimo'}`);
-    
+
     navigate("/solicitar-reserva", {
-      state: { 
+      state: {
         data: dataSelecionada,
         salaId: sala.id,
         horaInicio: horarioInicio,
@@ -307,12 +319,18 @@ export default function ConsultarDisponibilidade() {
               </div>
             </div>
 
-            <p className="modal-message" style={{ fontSize: "13px", color: "#6b7280" }}>
-              Você será redirecionado para o formulário com os dados pré-preenchidos.
-            </p>
+            {conflitoModal ? (
+              <p className="error-message">
+                Esse horário já está reservado ({formatarHorario(conflitoModal.horaInicio)}–{formatarHorario(conflitoModal.horaFim)}). Escolha outro horário.
+              </p>
+            ) : (
+              <p className="modal-message" style={{ fontSize: "13px", color: "#6b7280" }}>
+                Você será redirecionado para o formulário com os dados pré-preenchidos.
+              </p>
+            )}
 
             <div className="modal-buttons">
-              <button className="modal-btn modal-btn-primary" onClick={handleConfirmarReserva}>
+              <button className="modal-btn modal-btn-primary" onClick={handleConfirmarReserva} disabled={!!conflitoModal}>
                 Continuar
               </button>
               <button className="modal-btn modal-btn-secondary" onClick={() => setModalReserva({ aberto: false, sala: null })}>
@@ -389,12 +407,7 @@ export default function ConsultarDisponibilidade() {
                             className={`sala-horario-item ${r.tipoOcupacao === "pendente" ? "horario-pendente" : "horario-aprovado"}`}
                           >
                             {r.tipoOcupacao === "pendente" ? "⏳" : "✓"} {formatarHorario(r.horaInicio)}–{formatarHorario(r.horaFim)}
-                            {r.tipoOcupacao === "aprovado" && isGestorOuAdmin && r.usuarioEmail && (
-                              <span className="sala-usuario-email">
-                                · {r.usuarioEmail}
-                              </span>
-                            )}
-                            {r.tipoOcupacao === "pendente" && (
+                            {isGestorOuAdmin && (r.usuarioNome || r.nome) && (
                               <span className="sala-usuario-email">
                                 · {r.usuarioNome || r.nome}
                               </span>

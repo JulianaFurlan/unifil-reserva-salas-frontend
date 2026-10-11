@@ -257,6 +257,7 @@ export default function GerenciarSalas() {
       fecharModalExcluir();
       carregar();
     } catch (err) {
+      fecharModalExcluir();
       if (temReservaCadastrada(err)) {
         addToast("error", err.response?.data?.message || "Esta sala possui reservas associadas e não pode ser excluída.");
       } else {

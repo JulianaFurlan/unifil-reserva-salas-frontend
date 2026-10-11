@@ -159,9 +159,9 @@ export default function SolicitarReserva() {
     if (r.status !== "APROVADO") return;
     if (r.data !== form.data) return;
     if (isEditing && r.id === editingId) return;
-    if (horariosSobrepoem(form.horaInicio, form.horaFim, r.horaInicio, r.horaFim)) {
-      const horaIni = r.horaInicio.slice(0, 5);
-      const horaFimStr = r.horaFim.slice(0, 5);
+    const horaIni = r.horaInicio.slice(0, 5);
+    const horaFimStr = r.horaFim.slice(0, 5);
+    if (horariosSobrepoem(form.horaInicio, form.horaFim, horaIni, horaFimStr)) {
       resultado[r.salaId] = `Reservado ${horaIni}–${horaFimStr}`;
     }
   });
@@ -230,6 +230,10 @@ useEffect(() => {
         }
       }
 
+      // o backend guarda o label (ou o texto livre do "outro"), entao volta pelo label
+      const finalidadeSalva = reserva.finalidade || "";
+      const opcaoFinalidade = FINALIDADES.find(f => f.label === finalidadeSalva);
+
       setForm({
         data: reserva.data,
         horaInicio: reserva.horaInicio,
@@ -240,8 +244,8 @@ useEffect(() => {
         email: reserva.email,
         telefone: reserva.telefone || "",
         departamento: reserva.departamento || "",
-        finalidade : reserva.finalidade || "",
-        finalidadeOutro: reserva.finalidade === "outro" ? reserva.finalidadeOutro || "" : "",
+        finalidade: opcaoFinalidade ? opcaoFinalidade.value : (finalidadeSalva ? "outro" : ""),
+        finalidadeOutro: !opcaoFinalidade && finalidadeSalva ? finalidadeSalva : "",
         observacoes: reserva.observacoes || "",
       });
 
@@ -429,6 +433,10 @@ const handleChange = (e) => {
     newErrors.horaFim = "Horário de fim deve ser após o início";
   }
 }
+
+    if (form.salaId && salasAprovadas[form.salaId]) {
+      newErrors.salaId = "Sala reservada nesse horário";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);

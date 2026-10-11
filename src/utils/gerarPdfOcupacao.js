@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import logoUnifil from '../assets/logo-Unifil.png';
-import { formatarData, formatarHorario } from './formatadores';
+import { formatarData, formatarHorario, nomeDepartamento } from './formatadores';
 
 // cores da unifil
 const COR_PRIMARIA = [242, 127, 32];
@@ -111,7 +111,7 @@ const linhas = reservasDia.map(r => [
     r.salaNome || '—',
     `${formatarHorario(r.horaInicio)} – ${formatarHorario(r.horaFim)}`,
     r.nome || '—',
-    r.departamento || '—',
+    nomeDepartamento(r.departamento) || '—',
     r.finalidade || '—',
     r.status === 'APROVADO' ? 'Aprovada' : 'Em análise',
 ]);

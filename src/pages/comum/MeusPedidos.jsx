@@ -111,9 +111,9 @@ const editarReserva = (reserva) => {
   }
 };
 
-  const reservasEmAnalise = reservas.filter(r =>
-    getStatusCategoria(r.status, r.data, r.horaFim) === 'analise'
-  );
+  const reservasEmAnalise = reservas
+    .filter(r => getStatusCategoria(r.status, r.data, r.horaFim) === 'analise')
+    .sort((a, b) => toDateTime(a.data, a.horaInicio) - toDateTime(b.data, b.horaInicio));
   const reservasAprovadas = reservas.filter(r =>
     getStatusCategoria(r.status, r.data, r.horaFim) === 'aprovada'
   );
@@ -123,6 +123,7 @@ const editarReserva = (reserva) => {
 
 const finalizadasVisiveis = reservasFinalizadas.slice(0, limitarFinalizadas);
 const temMais = reservasFinalizadas.length > limitarFinalizadas;
+const restantes = reservasFinalizadas.length - limitarFinalizadas;
 
   return (
     <>
@@ -339,7 +340,7 @@ const temMais = reservasFinalizadas.length > limitarFinalizadas;
                     onClick={() => setLimitarFinalizadas(prev => prev + 7)}
                     className="btn-mostrar-mais"
                   >
-                    Mostrar mais ({reservasFinalizadas.length - limitarFinalizadas} restantes)
+                    Mostrar mais ({restantes} {restantes === 1 ? 'restante' : 'restantes'})
                   </button>
                 )}
                 </div>

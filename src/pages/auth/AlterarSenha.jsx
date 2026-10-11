@@ -126,6 +126,7 @@ export default function AlterarSenha() {
                     type={mostrarSenhaAtual ? 'text' : 'password'}
                     className="entrar-input"
                     placeholder="Sua senha atual"
+                    autoComplete="current-password"
                     value={senhaAtual}
                     onChange={(e) => setSenhaAtual(e.target.value)}
                     required
@@ -148,6 +149,7 @@ export default function AlterarSenha() {
                     type={mostrarNovaSenha ? 'text' : 'password'}
                     className="entrar-input"
                     placeholder="Mínimo 6 caracteres"
+                    autoComplete="new-password"
                     value={novaSenha}
                     onChange={(e) => setNovaSenha(e.target.value)}
                     required
@@ -170,6 +172,7 @@ export default function AlterarSenha() {
                     type={mostrarConfirmarSenha ? 'text' : 'password'}
                     className="entrar-input"
                     placeholder="Repita a nova senha"
+                    autoComplete="new-password"
                     value={confirmarSenha}
                     onChange={(e) => setConfirmarSenha(e.target.value)}
                     required

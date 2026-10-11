@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { HelpCircle, X } from "lucide-react";
 
-// o youtube so deixa carregar em iframe no formato /embed/ID, entao convertemos
-// links normais (youtu.be/ID ou youtube.com/watch?v=ID) pra evitar o erro de X-Frame-Options
 const paraUrlEmbed = (url) => {
   if (!url) return url;
   try {

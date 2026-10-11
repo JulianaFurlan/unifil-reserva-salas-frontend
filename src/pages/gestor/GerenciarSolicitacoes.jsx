@@ -6,7 +6,7 @@ import BotaoAjuda from "../../components/BotaoAjuda";
 import { AiOutlineCheck, AiOutlineClose, AiOutlineSearch } from "react-icons/ai";
 import { Mail } from "lucide-react";
 import { gerarPdfOcupacao } from '../../utils/gerarPdfOcupacao';
-import { formatarData, formatarHorario } from '../../utils/formatadores';
+import { formatarData, formatarHorario, nomeDepartamento } from '../../utils/formatadores';
 import { horariosSobrepoem, toDateTime, hojeISO } from '../../utils/horarios';
 import "../styles/reserva.css";
 
@@ -37,6 +37,7 @@ export default function GerenciarSolicitacoes() {
   const [showHistorico, setShowHistorico] = useState(false);
   const [historico, setHistorico] = useState([]);
   const [loadingHistorico, setLoadingHistorico] = useState(false);
+  const [reservaReverter, setReservaReverter] = useState(null);
 
   const [showContatoModal, setShowContatoModal] = useState(false);
   const [reservaContato, setReservaContato] = useState(null);
@@ -114,6 +115,12 @@ export default function GerenciarSolicitacoes() {
     } catch (error) {
       addToast('error', error.response?.data?.message || 'Erro ao reverter reserva', 'Erro');
     }
+  };
+
+  const confirmarReverter = async () => {
+    const id = reservaReverter.id;
+    setReservaReverter(null);
+    await reverterParaPendente(id);
   };
 
   const abrirContato = (reserva) => {
@@ -361,7 +368,7 @@ export default function GerenciarSolicitacoes() {
               <button
                 className="modal-btn modal-btn-primary"
                 onClick={confirmarAcao}
-                disabled={modalConfig.tipo === 'aprovar' && !!conflitoAprovacao}
+                disabled={modalConfig.tipo === 'aprovar' ? !!conflitoAprovacao : !motivoRejeicao.trim()}
               >
                 {modalConfig.tipo === 'aprovar' ? 'Sim, aprovar' : 'Sim, rejeitar'}
               </button>
@@ -394,7 +401,7 @@ export default function GerenciarSolicitacoes() {
                         {formatarData(reserva.data)} · {formatarHorario(reserva.horaInicio)}–{formatarHorario(reserva.horaFim)}
                       </span>
                       <span className="item-expirada-solicitante">
-                        {reserva.nome} · {reserva.departamento || "-"}
+                        {reserva.nome} · {nomeDepartamento(reserva.departamento) || "-"}
                       </span>
                     </div>
                     <span className="status-badge status-expirada">Expirada</span>
@@ -445,7 +452,7 @@ export default function GerenciarSolicitacoes() {
                       <button
                         type="button"
                         className="btn-reverter"
-                        onClick={() => reverterParaPendente(reserva.id)}
+                        onClick={() => setReservaReverter(reserva)}
                         disabled={isDataPassada(reserva.data)}
                         title={isDataPassada(reserva.data) ? "Não é possível reverter: a data já passou" : "Reverter para pendente"}
                       >
@@ -460,6 +467,33 @@ export default function GerenciarSolicitacoes() {
             <div className="modal-buttons">
               <button className="modal-btn modal-btn-secondary" onClick={() => setShowHistorico(false)}>
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* modal de confirmacao do reverter, fica depois do historico pra abrir por cima dele */}
+      {reservaReverter && (
+        <div className="modal-overlay" onClick={() => setReservaReverter(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-icon">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="30" fill="#f59e0b" stroke="#d97706" strokeWidth="2" />
+                <path d="M32 18v16M32 42v2" stroke="white" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h3 className="modal-title">Reverter Reserva</h3>
+            <p className="modal-message">
+              Deseja reverter a reserva de {reservaReverter.usuarioNome || reservaReverter.nome} em{" "}
+              {formatarData(reservaReverter.data)} para PENDENTE? Ela voltará para a lista de solicitações.
+            </p>
+            <div className="modal-buttons">
+              <button className="modal-btn modal-btn-primary" onClick={confirmarReverter}>
+                Sim, reverter
+              </button>
+              <button className="modal-btn modal-btn-secondary" onClick={() => setReservaReverter(null)}>
+                Cancelar
               </button>
             </div>
           </div>
@@ -533,7 +567,7 @@ export default function GerenciarSolicitacoes() {
           <button type="button" className="btn-historico" onClick={abrirHistorico}>
             Histórico{historico.length > 0 ? ` [${historico.length}]` : ""}
           </button>
-          <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservas, filtroData || null)}>
+          <button className="btn-gerar-pdf" onClick={() => gerarPdfOcupacao(reservasFiltradas, filtroData || null)}>
             Gerar PDF de Ocupação
           </button>
         </div>
@@ -638,7 +672,7 @@ export default function GerenciarSolicitacoes() {
                     </div>
                     <div className="info-item">
                       <span className="info-label">Departamento</span>
-                      <span className="info-value">{reserva.departamento || "-"}</span>
+                      <span className="info-value">{nomeDepartamento(reserva.departamento) || "-"}</span>
                     </div>
                   </div>
 

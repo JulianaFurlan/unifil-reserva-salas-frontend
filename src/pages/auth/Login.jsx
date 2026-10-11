@@ -83,6 +83,7 @@ export default function Login() {
                     type="email"
                     className="entrar-input"
                     placeholder="seuemail@unifil.br"
+                    autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -98,6 +99,7 @@ export default function Login() {
                     type={mostrarSenha ? 'text' : 'password'}
                     className="entrar-input"
                     placeholder="Sua senha"
+                    autoComplete="current-password"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     required
