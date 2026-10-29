@@ -117,9 +117,20 @@
 
 .user-content {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-content-topo {
+  display: flex;
   align-items: center;
   gap: 14px;
-  flex-wrap: wrap;
+}
+
+.user-content-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .user-avatar {

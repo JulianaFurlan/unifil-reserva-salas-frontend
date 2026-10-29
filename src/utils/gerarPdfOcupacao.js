@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import logoUnifil from '../assets/logo-Unifil.png';
-import { formatarData, formatarHorario, nomeDepartamento } from './formatadores';
+import { formatarData, formatarHorario } from './formatadores';
+import { nomeDepartamento } from './departamentos';
 
 // cores da unifil
 const COR_PRIMARIA = [242, 127, 32];
