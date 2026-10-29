@@ -1,22 +1,30 @@
 import { useState, useEffect } from "react";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import { useAuth } from "../hooks/useAuth";
 
-const CHAVE_TUTORIAL_VISTO = "tutorial-visto";
 const DURACAO_SAIDA_MS = 300;
 
 export default function BannerPrimeiroAcesso() {
+  const { user } = useAuth();
   const [visivel, setVisivel] = useState(false);
   const [saindo, setSaindo] = useState(false);
 
+  // so mostra pra quem ainda esta com a senha temporaria, e guarda o "ja visto" por usuario
+  const chaveTutorialVisto = `tutorial-visto-${user?.id ?? "anonimo"}`;
+
   useEffect(() => {
-    const jaViu = localStorage.getItem(CHAVE_TUTORIAL_VISTO);
+    if (!user?.senhaTemporaria) {
+      setVisivel(false);
+      return;
+    }
+    const jaViu = localStorage.getItem(chaveTutorialVisto);
     if (!jaViu) setVisivel(true);
-  }, []);
+  }, [user?.senhaTemporaria, chaveTutorialVisto]);
 
   const fechar = () => {
     setSaindo(true);
     setTimeout(() => {
-      localStorage.setItem(CHAVE_TUTORIAL_VISTO, "true");
+      localStorage.setItem(chaveTutorialVisto, "true");
       setVisivel(false);
     }, DURACAO_SAIDA_MS);
   };

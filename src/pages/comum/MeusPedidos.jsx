@@ -289,7 +289,7 @@ const restantes = reservasFinalizadas.length - limitarFinalizadas;
                       <button className="btn-editar" onClick={() => editarReserva(reserva)} title="Editar">
                         <AiOutlineEdit size={20} />
                       </button>
-                      <button className="btn-excluir" onClick={() => cancelarReserva(reserva.id)} title="Cancelar">
+                      <button className="btn-excluir" onClick={() => cancelarReserva(reserva)} title="Cancelar">
                         <AiOutlineDelete size={20} />
                       </button>
                     </div>

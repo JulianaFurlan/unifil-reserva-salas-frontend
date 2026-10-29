@@ -6,7 +6,8 @@ import BotaoAjuda from "../../components/BotaoAjuda";
 import { AiOutlineCheck, AiOutlineClose, AiOutlineSearch } from "react-icons/ai";
 import { Mail } from "lucide-react";
 import { gerarPdfOcupacao } from '../../utils/gerarPdfOcupacao';
-import { formatarData, formatarHorario, nomeDepartamento } from '../../utils/formatadores';
+import { formatarData, formatarHorario } from '../../utils/formatadores';
+import { nomeDepartamento } from '../../utils/departamentos';
 import { horariosSobrepoem, toDateTime, hojeISO } from '../../utils/horarios';
 import "../styles/reserva.css";
 

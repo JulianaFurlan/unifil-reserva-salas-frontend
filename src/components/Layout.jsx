@@ -113,24 +113,28 @@ export default function Layout() {
 
           <div className="user-section">
             <div className="user-content">
-              <div className="user-avatar-placeholder">
-                {user?.nome?.charAt(0)?.toUpperCase() || 'U'}
+              <div className="user-content-topo">
+                <div className="user-avatar-placeholder">
+                  {user?.nome?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+                <div className="user-info-sidebar">
+                  <span className="greeting">Olá,</span>
+                  <span className="user-name">{user?.nome || 'Usuário'}</span>
+                  <span className="user-role">{user?.tipo || 'COMUM'}</span>
+                </div>
               </div>
-              <div className="user-info-sidebar">
-                <span className="greeting">Olá,</span>
-                <span className="user-name">{user?.nome || 'Usuário'}</span>
-                <span className="user-role">{user?.tipo || 'COMUM'}</span>
+              <div className="user-content-acoes">
+                <button
+                  onClick={() => navigate('/alterar-senha')}
+                  className={`alterar-senha-btn ${user?.senhaTemporaria ? 'alterar-senha-btn-destaque' : ''}`}
+                >
+                  <AiOutlineLock size={14} />
+                  Alterar senha
+                </button>
+                <button onClick={handleLogout} className="logout-btn">
+                  Sair
+                </button>
               </div>
-              <button
-                onClick={() => navigate('/alterar-senha')}
-                className={`alterar-senha-btn ${user?.senhaTemporaria ? 'alterar-senha-btn-destaque' : ''}`}
-              >
-                <AiOutlineLock size={14} />
-                Alterar senha
-              </button>
-              <button onClick={handleLogout} className="logout-btn">
-                Sair
-              </button>
             </div>
           </div>
         </aside>

@@ -8,24 +8,10 @@ import CustomSelect from "../../components/CustomSelect";
 import BotaoAjuda from "../../components/BotaoAjuda";
 import { horariosSobrepoem, hojeISO } from "../../utils/horarios";
 import { formatarData, formatarHorario } from "../../utils/formatadores";
+import { DEPARTAMENTOS } from "../../utils/departamentos";
 import "../styles/reserva.css";
 
 const EMAIL_REGEX = /^[^\s@]+@unifil\.br$/;
-
-
-const DEPARTAMENTOS = [
-  { value: "CC", label: "Ciência da Computação" },
-  { value: "ADM", label: "Administração" },
-  { value: "DIREITO", label: "Direito" },
-  { value: "PSICOLOGIA", label: "Psicologia" },
-  { value: "CONTABIL", label: "Ciências Contábeis" },
-  { value: "ENFERMAGEM", label: "Enfermagem" },
-  { value: "FISIOTERAPIA", label: "Fisioterapia" },
-  { value: "NUTRICAO", label: "Nutrição" },
-  { value: "ED_FISICA", label: "Educação Física" },
-  { value: "ARQUITETURA", label: "Arquitetura e Urbanismo" },
-  { value: "ENGENHARIA", label: "Engenharia Civil" },
-];
 
 const FINALIDADES = [
   { value: "aula_reposicao", label: "Aula de reposição" },
@@ -230,7 +216,6 @@ useEffect(() => {
         }
       }
 
-      // o backend guarda o label (ou o texto livre do "outro"), entao volta pelo label
       const finalidadeSalva = reserva.finalidade || "";
       const opcaoFinalidade = FINALIDADES.find(f => f.label === finalidadeSalva);
 

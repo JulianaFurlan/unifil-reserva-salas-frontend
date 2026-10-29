@@ -7,10 +7,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // sobra da versao antiga, o token agora fica so no cookie httpOnly
     localStorage.removeItem('token');
 
-    // quem diz se tem sessao e o backend, pelo cookie
     const carregarUsuario = async () => {
       try {
         const response = await api.get('/auth/me');
@@ -50,7 +48,6 @@ export function AuthProvider({ children }) {
     try {
       await api.post('/auth/logout');
     } catch {
-      // mesmo se falhar, o usuario ja saiu da tela
     }
   };
 
