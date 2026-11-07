@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post('/auth/logout');
     } catch {
+      // mesmo se o backend falhar, o usuario ja foi deslogado localmente
     }
   };
 

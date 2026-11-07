@@ -94,7 +94,10 @@ export default function GerenciarSolicitacoes() {
     try {
       setLoadingHistorico(true);
       const response = await api.get("/reservas/historico");
-      setHistorico(response.data);
+      const ordenado = [...response.data].sort(
+        (a, b) => new Date(b.decididoEm) - new Date(a.decididoEm)
+      );
+      setHistorico(ordenado);
     } catch {
       addToast('error', 'Erro ao carregar histórico');
     } finally {
@@ -144,15 +147,6 @@ export default function GerenciarSolicitacoes() {
       return;
     }
 
-    // abre o gmail com o compose ja preenchido
-    const destinatario = encodeURIComponent(reservaContato.usuarioEmail);
-    const assunto = encodeURIComponent(
-      `Sobre sua reserva — ${reservaContato.salaNome} em ${formatarData(reservaContato.data)}`
-    );
-    const corpo = encodeURIComponent(mensagemContato);
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${destinatario}&su=${assunto}&body=${corpo}`;
-    window.open(gmailUrl, '_blank');
-
     setEnviandoContato(true);
     try {
       await api.post(`/reservas/${reservaContato.id}/contatar`, {
@@ -161,7 +155,7 @@ export default function GerenciarSolicitacoes() {
       addToast('success', 'Mensagem enviada!');
       fecharContato();
     } catch {
-      addToast('warning', 'Gmail aberto no navegador. O envio automático falhou.');
+      addToast('error', 'Erro ao enviar mensagem. Tente novamente.');
     } finally {
       setEnviandoContato(false);
     }
